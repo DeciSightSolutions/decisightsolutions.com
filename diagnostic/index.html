@@ -240,6 +240,7 @@ nav{
 .opt:hover{border-color:var(--green-e);background:var(--green-soft)}
 .opt.sel{
   border-color:var(--green-e);background:#0d1f10;
+  color:var(--green-e);
   box-shadow:0 0 0 3px rgba(37,99,235,.1);
 }
 .opt.sel .opt-radio{border-color:var(--green-e);background:var(--green-e)}
@@ -254,8 +255,10 @@ nav{
 }
 
 .opt-body{flex:1}
-.opt-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
+.opt-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:2px}
 .opt-sub{font-size:12px;color:var(--text3);line-height:1.4}
+.opt.sel .opt-title{color:#22c55e}
+.opt.sel .opt-sub{color:#86efac}
 
 /*  CAPACITY  */
 .cap-wrap{
@@ -325,7 +328,8 @@ nav{
   flex-shrink:0;margin-top:2px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;
 }
-.pi-text{font-size:13px;color:var(--text);line-height:1.4;flex:1}
+.pi-text{font-size:13px;color:var(--text2);line-height:1.4;flex:1}
+.prob-btn.psel .pi-text{color:#22c55e}
 .pi-wk{
   font-family:var(--f-mono);font-size:10px;color:var(--text4);
   flex-shrink:0;margin-top:3px;padding-left:8px;white-space:nowrap;font-weight:500;
@@ -850,7 +854,43 @@ function buildOverview(){
   document.getElementById('ovBudget').innerHTML=`<span style="font-weight:600">Budget Tier:</span><span class="pill ${bi.cls}">${bi.dot} ${bi.label}</span><span style="margin-left:auto;font-family:var(--f-mono);font-size:10px;color:var(--text4)">Full solutions in your email</span>`;
 }
 function chkForm(){const n=document.getElementById('fName').value.trim();const c=document.getElementById('fCompany').value.trim();const e=document.getElementById('fEmail').value.trim();document.getElementById('b4').disabled=!(n&&c&&e&&e.includes('@'));}
-function submitForm(){document.getElementById('confirmEmail').textContent=document.getElementById('fEmail').value.trim();document.getElementById('pFill').style.width='100%';document.getElementById('pPct').textContent='100%';document.getElementById('s4').classList.add('hidden');document.getElementById('s5').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});}
+async function submitForm(){
+  const name=document.getElementById('fName').value.trim();
+  const company=document.getElementById('fCompany').value.trim();
+  const email=document.getElementById('fEmail').value.trim();
+  const phone=document.getElementById('fPhone').value.trim();
+  const allPids=Object.values(S.selProbs).flat();
+  const recs=allPids.map(pid=>DB.find(d=>d.num===pid)).filter(Boolean);
+  const problemList=recs.map(r=>r.Problem).join(' | ');
+  const sector=S.sector||'';
+  const budget=S.budget||'';
+  const data={
+    access_key:'0c2015e9-92d2-494a-96ce-e42a0805c436',
+    subject:'New Financial Assessment — decisightsolutions.com',
+    from_name:'DeciSight Assessment Tool',
+    name:name,
+    company:company,
+    email:email,
+    phone:phone||'Not provided',
+    sector:sector,
+    budget:budget,
+    problems_selected:problemList,
+    total_problems:allPids.length
+  };
+  try{
+    await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(data)
+    });
+  }catch(e){console.log('Form submission error',e);}
+  document.getElementById('confirmEmail').textContent=email;
+  document.getElementById('pFill').style.width='100%';
+  document.getElementById('pPct').textContent='100%';
+  document.getElementById('s4').classList.add('hidden');
+  document.getElementById('s5').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 function submitFb(){if(!document.getElementById('fbText').value.trim()){alert('Please describe your challenge first.');return;}document.getElementById('fbForm').style.display='none';document.getElementById('fbSent').style.display='block';}
 function restart(){S.sector=null;S.budget=null;S.selProbs={};S.timeSpent={};document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));['b1','b2','b3','b4'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=true;});['fName','fCompany','fEmail','fPhone'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});go(1);}
 </script>

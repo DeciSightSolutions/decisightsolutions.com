@@ -649,17 +649,24 @@ window.addEventListener('DOMContentLoaded',function(){
       </div>
     </div>
     <div class="contact-form reveal d2">
-      <div class="f-row">
-        <div class="f-group"><label class="f-label">Full Name</label><input type="text" class="f-input" placeholder="Your name"></div>
-        <div class="f-group"><label class="f-label">Company</label><input type="text" class="f-input" placeholder="Company name"></div>
-      </div>
-      <div class="f-group"><label class="f-label">Email Address</label><input type="email" class="f-input" placeholder="your@company.com"></div>
-      <div class="f-group"><label class="f-label">What's your main challenge?</label><textarea class="f-input f-textarea" placeholder="e.g. Our cashflow forecasting is manual and takes too long..."></textarea></div>
-      <div class="f-group" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:1.25rem">
-        <input type="checkbox" id="consent" style="width:16px;height:16px;margin-top:2px;accent-color:var(--green);flex-shrink:0;cursor:pointer">
-        <label for="consent" style="font-size:12px;color:var(--t3);line-height:1.6;cursor:pointer">I agree that DeciSight Solutions may use my data to send me the financial transformation plan and contact me regarding my request. See our <a href="/privacy" style="color:var(--green);text-decoration:none">Privacy Policy</a>.</label>
-      </div>
-      <button class="f-submit" id="submitBtn" onclick="submitForm()" disabled style="opacity:.4;cursor:not-allowed">Send Message →</button>
+      <form id="contactForm" onsubmit="handleSubmit(event)">
+        <input type="hidden" name="access_key" value="0c2015e9-92d2-494a-96ce-e42a0805c436">
+        <input type="hidden" name="subject" value="New contact from decisightsolutions.com">
+        <input type="hidden" name="from_name" value="DeciSight Website">
+        <div class="f-row">
+          <div class="f-group"><label class="f-label">Full Name</label><input type="text" name="name" class="f-input" placeholder="Your name" required></div>
+          <div class="f-group"><label class="f-label">Company</label><input type="text" name="company" class="f-input" placeholder="Company name" required></div>
+        </div>
+        <div class="f-group"><label class="f-label">Email Address</label><input type="email" name="email" class="f-input" placeholder="your@company.com" required></div>
+        <div class="f-group"><label class="f-label">What's your main challenge?</label><textarea name="message" class="f-input f-textarea" placeholder="e.g. Our cashflow forecasting is manual and takes too long..."></textarea></div>
+        <div class="f-group" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:1.25rem">
+          <input type="checkbox" id="consent" onchange="toggleSubmit()" style="width:16px;height:16px;margin-top:2px;accent-color:var(--green);flex-shrink:0;cursor:pointer">
+          <label for="consent" style="font-size:12px;color:var(--t3);line-height:1.6;cursor:pointer">I agree that DeciSight Solutions may use my data to send me the financial transformation plan and contact me regarding my request. See our <a href="/privacy" style="color:var(--green);text-decoration:none">Privacy Policy</a>.</label>
+        </div>
+        <button type="submit" class="f-submit" id="submitBtn" disabled style="opacity:.4;cursor:not-allowed">Send Message →</button>
+        <div id="formSuccess" style="display:none;margin-top:1rem;padding:14px;background:var(--green-s);border:1px solid var(--green-m);border-radius:8px;font-size:13px;color:var(--green);font-weight:600">Message sent successfully — we'll be in touch within 24 hours.</div>
+        <div id="formError" style="display:none;margin-top:1rem;padding:14px;background:#1f0a0a;border:1px solid #7f1d1d;border-radius:8px;font-size:13px;color:#fca5a5;">Something went wrong. Please email us directly at info@decisightsolutions.com</div>
+      </form>
     </div>
   </div>
 </section>
@@ -697,17 +704,43 @@ window.addEventListener('DOMContentLoaded',function(){
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-document.getElementById('consent').addEventListener('change', function(){
+function toggleSubmit(){
+  const cb = document.getElementById('consent');
   const btn = document.getElementById('submitBtn');
-  btn.disabled = !this.checked;
-  btn.style.opacity = this.checked ? '1' : '.4';
-  btn.style.cursor = this.checked ? 'pointer' : 'not-allowed';
-});
-function submitForm(){
+  btn.disabled = !cb.checked;
+  btn.style.opacity = cb.checked ? '1' : '.4';
+  btn.style.cursor = cb.checked ? 'pointer' : 'not-allowed';
+}
+async function handleSubmit(e){
+  e.preventDefault();
   const btn = document.getElementById('submitBtn');
-  btn.textContent = 'Message sent ✓';
-  btn.style.background = 'var(--green-d)';
-  setTimeout(()=>{btn.textContent='Send Message →';btn.style.background='';},3000);
+  const form = document.getElementById('contactForm');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  const data = Object.fromEntries(new FormData(form));
+  try{
+    const res = await fetch('https://api.web3forms.com/submit',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const json = await res.json();
+    if(json.success){
+      document.getElementById('formSuccess').style.display='block';
+      document.getElementById('formError').style.display='none';
+      form.reset();
+      btn.textContent='Send Message →';
+      btn.style.opacity='.4';
+    } else {
+      throw new Error('Failed');
+    }
+  } catch(err){
+    document.getElementById('formError').style.display='block';
+    document.getElementById('formSuccess').style.display='none';
+    btn.textContent='Send Message →';
+    btn.disabled=false;
+    btn.style.opacity='1';
+  }
 }
 const io = new IntersectionObserver((entries)=>{
   entries.forEach((e,i)=>{
