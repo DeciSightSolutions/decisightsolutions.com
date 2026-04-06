@@ -632,7 +632,7 @@ footer a:hover{color:rgba(255,255,255,.8)}
         <button class="opt" onclick="pick('sector','other',this)"><div class="opt-radio"></div><div class="opt-body"><div class="opt-title">Other / Mixed</div><div class="opt-sub">Any SME or multi-sector business</div></div></button>
       </div>
       <div class="btn-row">
-        <button class="btn btn-p" id="b1" onclick="go(2)" disabled>Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        <button class="btn btn-p" id="b1" onclick="go(2)" disabled style="opacity:.4;cursor:not-allowed">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
       </div>
     </div>
   </div>
@@ -650,7 +650,7 @@ footer a:hover{color:rgba(255,255,255,.8)}
       </div>
       <div class="btn-row">
         <button class="btn btn-g" onclick="go(1)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>Back</button>
-        <button class="btn btn-p" id="b2" onclick="go(3)" disabled>Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        <button class="btn btn-p" id="b2" onclick="go(3)" disabled style="opacity:.4;cursor:not-allowed">Continue <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
       </div>
     </div>
   </div>
@@ -803,9 +803,17 @@ function go(n){
 }
 function pick(field,val,el){
   el.closest('.opts').querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
-  el.classList.add('sel');S[field]=val;
+  el.classList.add('sel');
+  S[field]=val;
   const m={sector:'b1',budget:'b2'};
-  if(m[field])document.getElementById(m[field]).disabled=false;
+  if(m[field]){
+    const btn=document.getElementById(m[field]);
+    if(btn){
+      btn.disabled=false;
+      btn.style.opacity='1';
+      btn.style.cursor='pointer';
+    }
+  }
 }
 function matchSector(rec){if(S.sector==='other'||rec.Sector==='All')return true;const kw=SECTOR_KW[S.sector]||[];return kw.some(k=>rec.Sector.toLowerCase().includes(k.toLowerCase()));}
 function buildAreas(){
