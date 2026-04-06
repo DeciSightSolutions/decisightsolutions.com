@@ -236,6 +236,7 @@ footer{background:#000000;padding:60px 5% 36px;border-top:1px solid var(--border
 /* ANIMATIONS */
 @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.hero .reveal,.hero-inner,.hero-badge,.hero h1,.hero-sub,.hero-actions,.hero-stats{opacity:1!important;transform:none!important}
 .reveal.on{opacity:1;transform:none}
 .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
 
@@ -337,15 +338,15 @@ window.addEventListener('DOMContentLoaded',function(){
 </nav>
 
 <section class="hero">
-  <div class="hero-inner">
-    <div class="hero-badge"><div class="hero-badge-dot"></div>AI-Powered Financial Transformation for SMEs</div>
-    <h1>Finally, financial clarity<br><em>without the complexity.</em></h1>
-    <p class="hero-sub">Automate your reporting, forecast cashflow with confidence, and make smarter decisions — without new software, new hires, or a big consulting budget.</p>
-    <div class="hero-actions">
+  <div class="hero-inner" style="opacity:1;transform:none">
+    <div class="hero-badge" style="opacity:1;transform:none"><div class="hero-badge-dot"></div>AI-Powered Financial Transformation for SMEs</div>
+    <h1 style="opacity:1;transform:none">Finally, financial clarity<br><em>without the complexity.</em></h1>
+    <p class="hero-sub" style="opacity:1;transform:none">Automate your reporting, forecast cashflow with confidence, and make smarter decisions — without new software, new hires, or a big consulting budget.</p>
+    <div class="hero-actions" style="opacity:1;transform:none">
       <a href="https://decisightsolutions.com/diagnostic" class="btn-primary">Get Your Free Assessment →</a>
       <a href="#program" class="btn-secondary">See the 12-Week Program</a>
     </div>
-    <div class="hero-stats">
+    <div class="hero-stats" style="opacity:1;transform:none">
       <div class="h-stat"><div class="h-stat-val">12</div><div class="h-stat-lbl">Weeks to transform</div></div>
       <div class="h-stat"><div class="h-stat-val">18h</div><div class="h-stat-lbl">Saved per week</div></div>
       <div class="h-stat"><div class="h-stat-val">€0</div><div class="h-stat-lbl">Extra hires needed</div></div>
@@ -665,7 +666,7 @@ window.addEventListener('DOMContentLoaded',function(){
         </div>
         <button type="submit" class="f-submit" id="submitBtn" disabled style="opacity:.4;cursor:not-allowed">Send Message →</button>
         <div id="formSuccess" style="display:none;margin-top:1rem;padding:14px;background:var(--green-s);border:1px solid var(--green-m);border-radius:8px;font-size:13px;color:var(--green);font-weight:600">Message sent successfully — we'll be in touch within 24 hours.</div>
-        <div id="formError" style="display:none;margin-top:1rem;padding:14px;background:#1f0a0a;border:1px solid #7f1d1d;border-radius:8px;font-size:13px;color:#fca5a5;">Something went wrong. Please email us directly at info@decisightsolutions.com</div>
+        <div id="formError" style="display:none;margin-top:1rem;padding:14px;background:#1f0a0a;border:1px solid #7f1d1d;border-radius:8px;font-size:13px;color:#fca5a5;">Something went wrong. Please email us directly at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="81e8efe7eec1e5e4e2e8f2e8e6e9f5f2eeedf4f5e8eeeff2afe2eeec">[email&#160;protected]</a></div>
       </form>
     </div>
   </div>
@@ -703,7 +704,7 @@ window.addEventListener('DOMContentLoaded',function(){
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function toggleSubmit(){
   const cb = document.getElementById('consent');
   const btn = document.getElementById('submitBtn');
@@ -738,12 +739,4 @@ async function handleSubmit(e){
     document.getElementById('formError').style.display='block';
     document.getElementById('formSuccess').style.display='none';
     btn.textContent='Send Message →';
-    btn.disabled=false;
-    btn.style.opacity='1';
-  }
-}
-const io = new IntersectionObserver((entries)=>{
-  entries.forEach((e,i)=>{
-    if(e.isIntersecting){setTimeout(()=>e.target.classList.add('on'),i*60);io.unobserve(e.target);}
-  });
-},{threshol
+    btn.disa
