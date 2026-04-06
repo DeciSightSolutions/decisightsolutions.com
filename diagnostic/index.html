@@ -538,8 +538,8 @@ nav{
   padding:3px 10px;border-radius:100px;
   font-family:var(--f-mono);font-size:10px;font-weight:600;
 }
-.pill-low{background:var(--green-soft);color:var(--green)}
-.pill-mid{background:var(--amber-soft);color:var(--amber)}
+.pill-low{background:#0d1f10;color:#22c55e;border:1px solid #166534}
+.pill-mid{background:#1c1007;color:#f59e0b;border:1px solid #854d0e}
 .pill-high{background:var(--green-soft);color:var(--green-dark)}
 
 /*  FOOTER  */
@@ -864,16 +864,15 @@ async function submitForm(){
   const problemList=recs.map(r=>r.Problem).join(' | ');
   const sector=S.sector||'';
   const budget=S.budget||'';
+
+  // Send to Web3Forms
   const data={
     access_key:'0c2015e9-92d2-494a-96ce-e42a0805c436',
     subject:'New Financial Assessment — decisightsolutions.com',
     from_name:'DeciSight Assessment Tool',
-    name:name,
-    company:company,
-    email:email,
+    name:name,company:company,email:email,
     phone:phone||'Not provided',
-    sector:sector,
-    budget:budget,
+    sector:sector,budget:budget,
     problems_selected:problemList,
     total_problems:allPids.length
   };
@@ -883,13 +882,197 @@ async function submitForm(){
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body:JSON.stringify(data)
     });
-  }catch(e){console.log('Form submission error',e);}
+  }catch(e){console.log('Form error',e);}
+
+  // Generate PDF
+  generatePDF(name,company,email,recs,allPids);
+
   document.getElementById('confirmEmail').textContent=email;
   document.getElementById('pFill').style.width='100%';
   document.getElementById('pPct').textContent='100%';
   document.getElementById('s4').classList.add('hidden');
   document.getElementById('s5').classList.remove('hidden');
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+const PHASE_DEF2=[
+  {id:'p1',wk:'Weeks 1–2',name:'Diagnose',cats:['Cash Flow','Accounts Receivable','Accounts Payable','Financial Controls','Tax & Compliance','Fraud & Ethics']},
+  {id:'p2',wk:'Weeks 3–6',name:'Automate',cats:['Reporting','Payroll','Technology & Tools']},
+  {id:'p3',wk:'Weeks 7–8',name:'Predict',cats:['Budgeting','Forecasting','Cost Management','Pricing','Working Capital','Inventory','Revenue Management']},
+  {id:'p4',wk:'Weeks 9–10',name:'Empower',cats:['Investor Relations','M&A / Strategy','FX & Treasury']},
+  {id:'p5',wk:'Weeks 11–12',name:'Govern & Scale',cats:['HR Finance','Financing & Debt','Insurance & Risk','Sustainability / ESG','Supply Chain Finance','Real Estate & Leases']}
+];
+
+const BUDGET_LABELS={'LOW':'Under €500/mo','MID':'€501–2,000/mo','HIGH':'Over €2,000/mo'};
+
+function getSolution(rec){
+  const b=S.budget||'LOW';
+  return rec[b]||rec['LOW']||'';
+}
+
+function getPhase2(cat){
+  return PHASE_DEF2.find(p=>p.cats.includes(cat))||PHASE_DEF2[4];
+}
+
+function nowTotal(recs){
+  return recs.reduce((a,r)=>{return a+(S.timeSpent[r.num]||0);},0);
+}
+function savedTotal(recs){
+  let s=0;
+  recs.forEach(r=>{
+    const now=S.timeSpent[r.num]||0;
+    const m=(r.Execute_Once_Live||'').match(/([\d.]+)/);
+    const v=m?parseFloat(m[1]):0;
+    const txt=(r.Execute_Once_Live||'').toLowerCase();
+    let mo=v;
+    if(txt.includes('wk')||txt.includes('week'))mo=v*4;
+    else if(txt.includes('day'))mo=v*22;
+    s+=Math.max(0,now-mo);
+  });
+  return Math.round(s);
+}
+
+function generatePDF(name,company,email,recs,allPids){
+  const budgetLabel=BUDGET_LABELS[S.budget]||'Under €500/mo';
+  const now=Math.round(nowTotal(recs));
+  const saved=savedTotal(recs);
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  // Group by phase
+  const phases={};
+  recs.forEach(r=>{
+    const ph=getPhase2(r.Category);
+    if(!phases[ph.id])phases[ph.id]={...ph,recs:[]};
+    phases[ph.id].recs.push(r);
+  });
+
+  let phasesHTML='';
+  PHASE_DEF2.forEach(ph=>{
+    if(!phases[ph.id])return;
+    const phRecs=phases[ph.id].recs;
+    let cardsHTML='';
+    phRecs.forEach(r=>{
+      const sol=getSolution(r);
+      const kpi=r.KPI||'';
+      const time=r.Time_to_Implement||'';
+      const live=r.Execute_Once_Live||'';
+      cardsHTML+=`
+        <div style="border:1px solid #e4e4e7;border-radius:8px;overflow:hidden;margin-bottom:10px;page-break-inside:avoid">
+          <div style="background:#f4f4f5;padding:11px 16px;border-bottom:1px solid #e4e4e7;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <span style="font-size:12px;font-weight:700;color:#09090b;line-height:1.4;flex:1">${r.Problem}</span>
+            <span style="font-size:10px;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;flex-shrink:0">${time}</span>
+          </div>
+          <div style="padding:14px 16px;background:#ffffff">
+            <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Your solution · ${budgetLabel}</div>
+            <div style="font-size:12px;color:#52525b;line-height:1.65;margin-bottom:10px">${sol}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${kpi?`<span style="font-size:11px;background:#f4f4f5;color:#71717a;padding:4px 10px;border-radius:6px">KPI: ${kpi}</span>`:''}
+              ${live?`<span style="font-size:11px;background:#f4f4f5;color:#71717a;padding:4px 10px;border-radius:6px">Once live: ${live}</span>`:''}
+            </div>
+          </div>
+        </div>`;
+    });
+    phasesHTML+=`
+      <div style="margin-bottom:28px;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <div style="width:28px;height:28px;background:#09090b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#22c55e;flex-shrink:0">${ph.id.replace('p','')}</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#09090b">${ph.name}</div>
+            <div style="font-size:11px;color:#71717a">${ph.wk} · ${phRecs.map(r=>r.Category).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')}</div>
+          </div>
+        </div>
+        ${cardsHTML}
+      </div>`;
+  });
+
+  const html=`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>DeciSight — Financial Transformation Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:#ffffff;color:#09090b;font-size:14px;line-height:1.6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @media print{body{margin:0}.no-print{display:none!important}@page{margin:15mm}}
+</style>
+</head>
+<body>
+<div style="max-width:760px;margin:0 auto;padding:0">
+
+  <!-- PRINT BUTTON -->
+  <div class="no-print" style="background:#09090b;padding:14px 40px;display:flex;align-items:center;justify-content:space-between">
+    <span style="color:#a1a1aa;font-size:13px">Your personalised plan is ready</span>
+    <button onclick="window.print()" style="background:#22c55e;color:#09090b;font-family:inherit;font-size:13px;font-weight:700;padding:10px 24px;border:none;border-radius:8px;cursor:pointer">Download / Print PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div style="background:#09090b;padding:36px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:32px;height:32px;background:#22c55e;border-radius:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5"><polyline points="3,17 8,11 12,14 20,5"/></svg>
+        </div>
+        <span style="font-size:17px;font-weight:800;color:#ffffff;letter-spacing:-.02em">DeciSight Solutions</span>
+      </div>
+      <div style="font-size:11px;color:#71717a;letter-spacing:.1em;text-transform:uppercase">Personalised Financial Transformation Plan</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#71717a;margin-bottom:2px">Prepared for</div>
+      <div style="font-size:16px;font-weight:700;color:#ffffff">${name}</div>
+      ${company?`<div style="font-size:13px;color:#22c55e">${company}</div>`:''}
+      <div style="font-size:11px;color:#52525b;margin-top:4px">${today}</div>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div style="padding:24px 40px;background:#0d1f10;border-bottom:1px solid #166534">
+    <p style="font-size:13px;color:#86efac;line-height:1.7">This plan has been generated based on the financial challenges you identified in your DeciSight assessment. Each solution has been tailored to your budget tier (<strong style="color:#22c55e">${budgetLabel}</strong>) and organised into a 12-week transformation roadmap. We recommend booking a free 30-minute consultation to walk through this plan together.</p>
+  </div>
+
+  <!-- STATS -->
+  <div style="padding:28px 40px;border-bottom:1px solid #e4e4e7;background:#ffffff">
+    <div style="font-size:11px;font-weight:700;color:#71717a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px">Your transformation at a glance</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div style="background:#f4f4f5;border-radius:8px;padding:16px;text-align:center;border:1px solid #e4e4e7">
+        <div style="font-size:26px;font-weight:800;color:#22c55e;line-height:1">${recs.length}</div>
+        <div style="font-size:10px;color:#71717a;margin-top:5px;text-transform:uppercase;letter-spacing:.06em">Problems addressed</div>
+      </div>
+      <div style="background:#f4f4f5;border-radius:8px;padding:16px;text-align:center;border:1px solid #e4e4e7">
+        <div style="font-size:26px;font-weight:800;color:#09090b;line-height:1">${now}h</div>
+        <div style="font-size:10px;color:#71717a;margin-top:5px;text-transform:uppercase;letter-spacing:.06em">Hours today / month</div>
+      </div>
+      <div style="background:#f4f4f5;border-radius:8px;padding:16px;text-align:center;border:1px solid #e4e4e7">
+        <div style="font-size:26px;font-weight:800;color:#22c55e;line-height:1">${saved}h</div>
+        <div style="font-size:10px;color:#71717a;margin-top:5px;text-transform:uppercase;letter-spacing:.06em">Hours saved / month</div>
+      </div>
+      <div style="background:#f4f4f5;border-radius:8px;padding:16px;text-align:center;border:1px solid #e4e4e7">
+        <div style="font-size:26px;font-weight:800;color:#09090b;line-height:1">12w</div>
+        <div style="font-size:10px;color:#71717a;margin-top:5px;text-transform:uppercase;letter-spacing:.06em">To full transformation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <div style="padding:32px 40px;background:#ffffff">
+    <div style="font-size:11px;font-weight:700;color:#71717a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px">Your 12-week roadmap</div>
+    ${phasesHTML}
+  </div>
+
+  <!-- CTA -->
+  <div style="background:#09090b;padding:32px 40px;text-align:center">
+    <div style="font-size:16px;font-weight:800;color:#ffffff;margin-bottom:8px;letter-spacing:-.02em">Ready to start your transformation?</div>
+    <div style="font-size:13px;color:#a1a1aa;margin-bottom:20px">Book your free 30-minute consultation to walk through this plan together.</div>
+    <div style="font-size:13px;color:#22c55e;font-weight:600">info@decisightsolutions.com · decisightsolutions.com</div>
+  </div>
+
+</div>
+</body>
+</html>`;
+
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
 }
 function submitFb(){if(!document.getElementById('fbText').value.trim()){alert('Please describe your challenge first.');return;}document.getElementById('fbForm').style.display='none';document.getElementById('fbSent').style.display='block';}
 function restart(){S.sector=null;S.budget=null;S.selProbs={};S.timeSpent={};document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));['b1','b2','b3','b4'].forEach(id=>{const e=document.getElementById(id);if(e)e.disabled=true;});['fName','fCompany','fEmail','fPhone'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});go(1);}
