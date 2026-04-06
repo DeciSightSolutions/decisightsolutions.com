@@ -13,29 +13,41 @@
    Diagnostic Page — unified with main site
     */
 :root {
+  --green:     #22c55e;
   --green-e:   #22c55e;
   --green-dark:#16a34a;
+  --grnd:      #16a34a;
   --green-soft:#f0fdf4;
+  --grns:      #0d1f10;
   --green-mid: #dcfce7;
   --green-dim: #166534;
-  
-  
+  --grnm:      #166534;
   --amber:     #d97706;
   --amber-soft:#fffbeb;
   --red:       #dc2626;
   --red-soft:  #fef2f2;
   --white:     #ffffff;
   --bg:        #09090b;
+  --black:     #09090b;
   --bg2:       #111113;
+  --dark:      #111113;
   --border:    #27272a;
   --border2:   #3f3f46;
+  --bord2:     #3f3f46;
   --text:      #f4f4f5;
+  --t1:        #ffffff;
   --text2:     #e4e4e7;
+  --t2:        #e4e4e7;
   --text3:     #a1a1aa;
+  --t3:        #a1a1aa;
   --text4:     #71717a;
+  --t4:        #71717a;
   --f-head:   'Plus Jakarta Sans', sans-serif;
+  --fh:       'Plus Jakarta Sans', sans-serif;
   --f-serif:  'Lora', Georgia, serif;
+  --fs:       'Lora', Georgia, serif;
   --f-mono:   'JetBrains Mono', monospace;
+  --fm:       'JetBrains Mono', monospace;
   --ease-out: cubic-bezier(.16,1,.3,1);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -375,8 +387,8 @@ nav{
   transition:all .2s;border:none;
 }
 .btn svg{width:12px;height:12px}
-.btn-p{background:var(--green-e);color:#fff}
-.btn-p:hover:not(:disabled){background:var(--green-dark);transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.3)}
+.btn-p{background:#22c55e;color:#09090b}
+.btn-p:hover:not(:disabled){background:#16a34a;transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.3)}
 .btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
 .btn-g{background:transparent;color:var(--text3);border:1.5px solid var(--border)}
 .btn-g:hover{color:var(--text);border-color:var(--border2)}
@@ -802,16 +814,20 @@ function go(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function pick(field,val,el){
-  el.closest('.opts').querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+  var opts=el.closest('.opts');
+  if(opts){opts.querySelectorAll('.opt').forEach(function(o){o.classList.remove('sel');});}
   el.classList.add('sel');
   S[field]=val;
-  const m={sector:'b1',budget:'b2'};
-  if(m[field]){
-    const btn=document.getElementById(m[field]);
+  var ids={sector:'b1',budget:'b2'};
+  if(ids[field]){
+    var btn=document.getElementById(ids[field]);
     if(btn){
       btn.disabled=false;
+      btn.removeAttribute('disabled');
       btn.style.opacity='1';
       btn.style.cursor='pointer';
+      btn.style.background='#22c55e';
+      btn.style.color='#09090b';
     }
   }
 }
