@@ -938,50 +938,66 @@ function generatePDF(name,company,email,recs,allPids){
   const saved=savedTotal(recs);
   const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
 
-  // Group by phase
-  const phases={};
-  recs.forEach(r=>{
-    const ph=getPhase2(r.Category);
-    if(!phases[ph.id])phases[ph.id]={...ph,recs:[]};
-    phases[ph.id].recs.push(r);
-  });
+  // PART 1: 5 phases always
+  const phaseDescriptions={
+    p1:{desc:'We map your financial processes end to end, identify the highest-impact quick wins, and build your personalised transformation roadmap. You will leave this phase with a clear plan and immediate visibility improvements.',deliverables:['Financial process audit','Automation opportunity map','Personalised 12-week roadmap']},
+    p2:{desc:'Manual workflows are replaced with intelligent automated pipelines. Reporting, reconciliation, accounts payable and receivable, and operational finance processes move to autopilot — freeing your team to focus on decisions.',deliverables:['Automated reporting system','Data integration layer','Live KPI dashboards','Automated AP/AR workflows']},
+    p3:{desc:'We build AI-powered models tailored to your business for cashflow forecasting, budgeting, and risk management. You stop being reactive and start anticipating what's coming — weeks in advance.',deliverables:['13-week rolling cashflow model','Scenario planning tools (best/base/worst)','Early warning signal system','Budget vs actuals automation']},
+    p4:{desc:'Conversational AI turns your financial data into plain-language insights accessible to your entire team — not just finance. Decision-making becomes faster, more confident, and data-driven at every level.',deliverables:['AI financial assistant','Plain-language automated reports','Team training and adoption programme','Self-service analytics for non-finance users']},
+    p5:{desc:'We put in place the governance, compliance documentation, and scale-up infrastructure to ensure everything keeps working as your business grows. Your transformation becomes permanent and defensible.',deliverables:['AI governance framework','Compliance and audit documentation','Scale-up playbook','Ongoing optimisation guide']}
+  };
 
   let phasesHTML='';
-  PHASE_DEF2.forEach(ph=>{
-    if(!phases[ph.id])return;
-    const phRecs=phases[ph.id].recs;
-    let cardsHTML='';
-    phRecs.forEach(r=>{
-      const sol=getSolution(r);
-      const kpi=r.KPI||'';
-      const time=r.Time_to_Implement||'';
-      const live=r.Execute_Once_Live||'';
-      cardsHTML+=`
-        <div style="border:1px solid #e4e4e7;border-radius:8px;overflow:hidden;margin-bottom:10px;page-break-inside:avoid">
-          <div style="background:#f4f4f5;padding:11px 16px;border-bottom:1px solid #e4e4e7;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-            <span style="font-size:12px;font-weight:700;color:#09090b;line-height:1.4;flex:1">${r.Problem}</span>
-            <span style="font-size:10px;background:#dcfce7;color:#166534;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;flex-shrink:0">${time}</span>
-          </div>
-          <div style="padding:14px 16px;background:#ffffff">
-            <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Your solution · ${budgetLabel}</div>
-            <div style="font-size:12px;color:#52525b;line-height:1.65;margin-bottom:10px">${sol}</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              ${kpi?`<span style="font-size:11px;background:#f4f4f5;color:#71717a;padding:4px 10px;border-radius:6px">KPI: ${kpi}</span>`:''}
-              ${live?`<span style="font-size:11px;background:#f4f4f5;color:#71717a;padding:4px 10px;border-radius:6px">Once live: ${live}</span>`:''}
+  PHASE_DEF2.forEach((ph,idx)=>{
+    const pd=phaseDescriptions[ph.id];
+    const delHTML=pd.deliverables.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="color:#22c55e;font-weight:700;font-size:11px">✓</span><span style="font-size:12px;color:#52525b">${d}</span></div>`).join('');
+    phasesHTML+=`
+      <div style="display:flex;gap:16px;margin-bottom:20px;page-break-inside:avoid">
+        <div style="flex-shrink:0;text-align:center">
+          <div style="width:36px;height:36px;background:#09090b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#22c55e">${idx+1}</div>
+          ${idx<4?'<div style="width:2px;height:100%;background:#e4e4e7;margin:6px auto 0;min-height:20px"></div>':''}
+        </div>
+        <div style="flex:1;background:#ffffff;border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;margin-bottom:4px">
+          <div style="background:#f4f4f5;padding:12px 16px;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <span style="font-size:14px;font-weight:800;color:#09090b">${ph.name}</span>
+              <span style="font-size:11px;color:#71717a;margin-left:10px">${ph.wk}</span>
             </div>
           </div>
-        </div>`;
-    });
-    phasesHTML+=`
-      <div style="margin-bottom:28px;page-break-inside:avoid">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-          <div style="width:28px;height:28px;background:#09090b;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#22c55e;flex-shrink:0">${ph.id.replace('p','')}</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#09090b">${ph.name}</div>
-            <div style="font-size:11px;color:#71717a">${ph.wk} · ${phRecs.map(r=>r.Category).filter((v,i,a)=>a.indexOf(v)===i).join(' · ')}</div>
+          <div style="padding:14px 16px">
+            <p style="font-size:12px;color:#52525b;line-height:1.65;margin-bottom:12px">${pd.desc}</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px">${delHTML}</div>
           </div>
         </div>
-        ${cardsHTML}
+      </div>`;
+  });
+
+  // PART 2: Problems and solutions
+  let problemsHTML='';
+  recs.forEach((r,idx)=>{
+    const sol=getSolution(r);
+    const kpi=r.KPI||'';
+    const time=r.Time_to_Implement||'';
+    const live=r.Execute_Once_Live||'';
+    const impact=r.Impact||'';
+    problemsHTML+=`
+      <div style="border:1px solid #e4e4e7;border-radius:10px;overflow:hidden;margin-bottom:14px;page-break-inside:avoid">
+        <div style="background:#09090b;padding:12px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div style="display:flex;align-items:flex-start;gap:10px;flex:1">
+            <span style="font-size:11px;font-weight:700;color:#22c55e;flex-shrink:0;margin-top:2px">${String(idx+1).padStart(2,'0')}</span>
+            <span style="font-size:13px;font-weight:700;color:#ffffff;line-height:1.4">${r.Problem}</span>
+          </div>
+          <span style="font-size:10px;background:#0d1f10;color:#22c55e;border:1px solid #166534;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;flex-shrink:0">${time}</span>
+        </div>
+        ${impact?`<div style="padding:10px 18px;background:#fafafa;border-bottom:1px solid #e4e4e7"><span style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.06em">Business impact: </span><span style="font-size:11px;color:#71717a">${impact}</span></div>`:''}
+        <div style="padding:16px 18px;background:#ffffff">
+          <div style="font-size:10px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Your solution · ${budgetLabel}</div>
+          <div style="font-size:13px;color:#27272a;line-height:1.7;margin-bottom:14px">${sol}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${kpi?`<span style="font-size:11px;background:#f4f4f5;border:1px solid #e4e4e7;color:#52525b;padding:5px 12px;border-radius:6px;font-weight:500">KPI: ${kpi}</span>`:''}
+            ${live?`<span style="font-size:11px;background:#f4f4f5;border:1px solid #e4e4e7;color:#52525b;padding:5px 12px;border-radius:6px;font-weight:500">Once live: ${live}</span>`:''}
+          </div>
+        </div>
       </div>`;
   });
 
@@ -1054,9 +1070,16 @@ function generatePDF(name,company,email,recs,allPids){
   </div>
 
   <!-- PHASES -->
-  <div style="padding:32px 40px;background:#ffffff">
-    <div style="font-size:11px;font-weight:700;color:#71717a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px">Your 12-week roadmap</div>
+  <div style="padding:32px 40px;background:#ffffff;border-bottom:1px solid #e4e4e7">
+    <div style="font-size:11px;font-weight:700;color:#71717a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px">Your 12-week transformation programme</div>
     ${phasesHTML}
+  </div>
+
+  <!-- PROBLEMS -->
+  <div style="padding:32px 40px;background:#ffffff">
+    <div style="font-size:11px;font-weight:700;color:#71717a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Your identified challenges & solutions</div>
+    <div style="font-size:12px;color:#a1a1aa;margin-bottom:20px">Based on your assessment — ${recs.length} problems addressed, tailored to your budget tier</div>
+    ${problemsHTML}
   </div>
 
   <!-- CTA -->
