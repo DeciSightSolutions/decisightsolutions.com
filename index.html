@@ -281,6 +281,80 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>
 </head>
 <body>
+<style>
+#pw-overlay{
+  position:fixed;inset:0;z-index:99999;
+  background:#09090b;
+  display:flex;align-items:center;justify-content:center;
+}
+#pw-box{
+  background:#111113;border:1px solid #27272a;
+  border-radius:16px;padding:48px 40px;
+  text-align:center;width:100%;max-width:380px;
+}
+#pw-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:2rem}
+#pw-logo-icon{width:36px;height:36px;background:#22c55e;border-radius:10px;display:flex;align-items:center;justify-content:center}
+#pw-logo-text{font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-.03em}
+#pw-logo-text span{color:#22c55e}
+#pw-title{font-size:20px;font-weight:800;color:#ffffff;margin-bottom:.5rem;letter-spacing:-.02em}
+#pw-sub{font-size:13px;color:#71717a;margin-bottom:1.5rem;line-height:1.6}
+#pw-input{
+  width:100%;padding:12px 16px;
+  background:#09090b;border:1.5px solid #27272a;
+  border-radius:8px;font-family:inherit;
+  font-size:14px;color:#ffffff;outline:none;
+  text-align:center;letter-spacing:.1em;
+  margin-bottom:12px;transition:border-color .2s;
+}
+#pw-input:focus{border-color:#22c55e}
+#pw-input::placeholder{color:#52525b;letter-spacing:0}
+#pw-btn{
+  width:100%;padding:12px;
+  background:#22c55e;color:#09090b;
+  font-family:inherit;font-size:14px;font-weight:700;
+  border:none;border-radius:8px;cursor:pointer;
+  transition:background .2s;
+}
+#pw-btn:hover{background:#16a34a}
+#pw-error{
+  font-size:12px;color:#f87171;margin-top:10px;
+  display:none;
+}
+</style>
+<div id="pw-overlay">
+  <div id="pw-box">
+    <div id="pw-logo">
+      <div id="pw-logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5"><polyline points="3,17 8,11 12,14 20,5"/></svg>
+      </div>
+      <span id="pw-logo-text">Deci<span>Sight</span></span>
+    </div>
+    <div id="pw-title">Private Preview</div>
+    <div id="pw-sub">This site is currently under development.<br>Enter the password to continue.</div>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button id="pw-btn" onclick="checkPw()">Access Site</button>
+    <div id="pw-error">Incorrect password. Please try again.</div>
+  </div>
+</div>
+<script>
+(function(){
+  if(sessionStorage.getItem('ds_access')==='yes'){
+    document.getElementById('pw-overlay').style.display='none';
+  }
+})();
+function checkPw(){
+  var v=document.getElementById('pw-input').value;
+  if(v==='Amsterdam1987!'){
+    sessionStorage.setItem('ds_access','yes');
+    document.getElementById('pw-overlay').style.display='none';
+  } else {
+    document.getElementById('pw-error').style.display='block';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
+}
+</script>
+
 
 <!-- NAV -->
 <nav>
@@ -577,7 +651,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <p>Tell us where you are today. No obligation — just a clear, honest conversation about what transformation could look like for your business.</p>
       <div class="c-detail">
         <div class="c-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="12" height="9" rx="1"/><polyline points="2,5 8,10 14,5"/></svg></div>
-        <a href="mailto:info@decisightsolutions.com" style="color:var(--t2);text-decoration:none">info@decisightsolutions.com</a>
+        <a href="/cdn-cgi/l/email-protection#ea83848c85aa8e8f898399838d829e9985869f9e83858499c4898587" style="color:var(--t2);text-decoration:none"><span class="__cf_email__" data-cfemail="b9d0d7dfd6f9dddcdad0cad0ded1cdcad6d5cccdd0d6d7ca97dad6d4">[email&#160;protected]</span></a>
       </div>
       <div class="c-detail">
         <div class="c-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><polyline points="8,5 8,8 11,10"/></svg></div>
@@ -606,7 +680,7 @@ window.addEventListener('DOMContentLoaded', function() {
         </div>
         <button type="submit" class="fsub" id="submitBtn" disabled>Send Message →</button>
         <div class="msg-ok" id="msgOk">Message sent — we'll be in touch within 24 hours.</div>
-        <div class="msg-err" id="msgErr">Something went wrong. Please email us directly at info@decisightsolutions.com</div>
+        <div class="msg-err" id="msgErr">Something went wrong. Please email us directly at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1b72757d745b7f7e787268727c736f6874776e6f7274756835787476">[email&#160;protected]</a></div>
       </form>
     </div>
   </div>
@@ -634,7 +708,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <h5>Legal</h5>
       <ul>
         <li><a href="/privacy">Privacy Policy</a></li>
-        <li><a href="mailto:info@decisightsolutions.com">info@decisightsolutions.com</a></li>
+        <li><a href="/cdn-cgi/l/email-protection#5b32353d341b3f3e383228323c332f2834372e2f3234352875383436"><span class="__cf_email__" data-cfemail="9ef7f0f8f1defafbfdf7edf7f9f6eaedf1f2ebeaf7f1f0edb0fdf1f3">[email&#160;protected]</span></a></li>
       </ul>
     </div>
   </div>
@@ -653,7 +727,7 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function toggleBtn() {
   var cb = document.getElementById('consent');
   var btn = document.getElementById('submitBtn');
@@ -681,21 +755,4 @@ async function sendForm(e) {
       btn.disabled = true;
     } else { throw new Error('failed'); }
   } catch(err) {
-    document.getElementById('msgErr').style.display = 'block';
-    document.getElementById('msgOk').style.display = 'none';
-    btn.textContent = 'Send Message →';
-    btn.disabled = false;
-  }
-}
-
-document.querySelectorAll('.faq-q').forEach(function(q) {
-  q.addEventListener('click', function() {
-    var item = q.closest('.faq-item');
-    var isOpen = item.classList.contains('open');
-    document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
-    if (!isOpen) item.classList.add('open');
-  });
-});
-</script>
-</body>
-</html>
+    document.getElementById
