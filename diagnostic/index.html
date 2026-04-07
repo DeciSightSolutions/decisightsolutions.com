@@ -375,7 +375,10 @@ footer a:hover{color:var(--green)}
         <div class="field"><label>Full Name *</label><input type="text" id="fName" placeholder="Jane Smith" oninput="chkGate()"></div>
         <div class="field"><label>Company *</label><input type="text" id="fCompany" placeholder="Acme Ltd" oninput="chkGate()"></div>
         <div class="field field-full"><label>Work Email *</label><input type="email" id="fEmail" placeholder="jane@acme.com" oninput="chkGate()"></div>
-        <div class="field"><label>Phone</label><input type="tel" id="fPhone" placeholder="+34 600 000 000"></div>
+        
+        <div style="position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden" aria-hidden="true">
+          <input type="text" id="hpField" name="website" tabindex="-1" autocomplete="off" value="">
+        </div>
       </div>
       <div class="cf-turnstile" 
   data-sitekey="0x4AAAAAAC1riXgtruLMIPdC" 
@@ -1177,6 +1180,15 @@ window.onTurnstileSuccess = function() { chkGate(); };
 var LAST_PDF = {};
 
 async function submitPlan() {
+  // Honeypot check - if filled, it's a bot
+  var hp = document.getElementById('hpField');
+  if(hp && hp.value.length > 0) {
+    // Silent fail - pretend it worked
+    document.getElementById('s5').classList.add('hidden');
+    document.getElementById('s6').classList.remove('hidden');
+    return;
+  }
+
   // One-time submission guard
   if(localStorage.getItem('ds_plan_downloaded') === 'yes') {
     alert('You have already downloaded your plan. Contact us at info@decisightsolutions.com for a personalised consultation.');
@@ -1375,7 +1387,7 @@ function restart() {
     var e = document.getElementById(id);
     if(e){ e.disabled=true; e.style.opacity='.35'; }
   });
-  ['fName','fCompany','fEmail','fPhone'].forEach(function(id){
+  ['fName','fCompany','fEmail',].forEach(function(id){
     var e = document.getElementById(id);
     if(e) e.value = '';
   });
