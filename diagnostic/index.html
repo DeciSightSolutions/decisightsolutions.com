@@ -1207,7 +1207,7 @@ async function submitPlan() {
   btn.disabled = true;
 
   try {
-    var verifyResp = await fetch('https://decisight-db.old-wind-8d3a.workers.dev/verify-turnstile', {
+    var verifyResp = await fetch('https://api.decisightsolutions.com/verify-turnstile', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token: tsResp.value })
@@ -1409,7 +1409,7 @@ async function loadDB() {
   }
   DB_LOADING = true;
   try {
-    var resp = await fetch('https://decisight-db.old-wind-8d3a.workers.dev/db', {
+    var resp = await fetch('https://api.decisightsolutions.com/db', {
       method: 'GET',
       headers: { 'X-Token': '8cba98239d18ffa900cbacf6d9070b4e' }
     });
