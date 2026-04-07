@@ -231,6 +231,7 @@ footer a:hover{color:var(--green)}
   .ov-stats{grid-template-columns:1fr 1fr}
 }
 </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -376,7 +377,14 @@ footer a:hover{color:var(--green)}
         <div class="field field-full"><label>Work Email *</label><input type="email" id="fEmail" placeholder="jane@acme.com" oninput="chkGate()"></div>
         <div class="field"><label>Phone</label><input type="tel" id="fPhone" placeholder="+34 600 000 000"></div>
       </div>
-      <div class="consent-row">
+      <div class="cf-turnstile" 
+  data-sitekey="0x4AAAAAAC1riXgtruLMIPdC" 
+  data-theme="dark"
+  data-size="flexible"
+  data-callback="onTurnstileSuccess"
+  style="margin-bottom:12px">
+</div>
+<div class="consent-row">
         <input type="checkbox" id="gConsent" onchange="chkGate()">
         <label for="gConsent">I agree that DeciSight Solutions may use my data to send me the financial transformation plan and contact me. See our <a href="/privacy">Privacy Policy</a>.</label>
       </div>
@@ -1156,19 +1164,55 @@ function chkGate() {
   var co = document.getElementById('fCompany').value.trim();
   var e = document.getElementById('fEmail').value.trim();
   var c = document.getElementById('gConsent').checked;
-  var ok = n && co && e && e.indexOf('@')>-1 && c;
+  var tsResp = document.querySelector('[name="cf-turnstile-response"]');
+  var tsOk = tsResp && tsResp.value.length > 0;
+  var ok = n && co && e && e.indexOf('@')>-1 && c && tsOk;
   document.getElementById('b4').disabled = !ok;
   document.getElementById('b4').style.opacity = ok ? '1' : '.35';
 }
 
+// Re-check gate when Turnstile completes
+window.onTurnstileSuccess = function() { chkGate(); };
+
 var LAST_PDF = {};
 
-function submitPlan() {
+async function submitPlan() {
   // One-time submission guard
   if(localStorage.getItem('ds_plan_downloaded') === 'yes') {
     alert('You have already downloaded your plan. Contact us at info@decisightsolutions.com for a personalised consultation.');
     return;
   }
+
+  // Verify Turnstile
+  var tsResp = document.querySelector('[name="cf-turnstile-response"]');
+  if(!tsResp || !tsResp.value) {
+    alert('Please complete the security check.');
+    return;
+  }
+
+  var btn = document.getElementById('b4');
+  btn.textContent = 'Verifying...';
+  btn.disabled = true;
+
+  try {
+    var verifyResp = await fetch('https://decisight-db.old-wind-8d3a.workers.dev/verify-turnstile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: tsResp.value })
+    });
+    var verifyData = await verifyResp.json();
+    if(!verifyData.success) {
+      alert('Security check failed. Please refresh and try again.');
+      btn.textContent = 'Get My Free Plan';
+      btn.disabled = false;
+      return;
+    }
+  } catch(e) {
+    // If worker verification fails, allow anyway (fail open for UX)
+    console.warn('Turnstile verify failed:', e);
+  }
+
+  btn.textContent = 'Generating...';
 
   var name = document.getElementById('fName').value.trim();
   var company = document.getElementById('fCompany').value.trim();
@@ -1353,7 +1397,7 @@ async function loadDB() {
   }
   DB_LOADING = true;
   try {
-    var resp = await fetch('https://decisight-db.curly-rain-e2f0.workers.dev/db', {
+    var resp = await fetch('https://decisight-db.old-wind-8d3a.workers.dev/db', {
       method: 'GET',
       headers: { 'X-Token': '8cba98239d18ffa900cbacf6d9070b4e' }
     });
