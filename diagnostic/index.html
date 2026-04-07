@@ -591,9 +591,10 @@ function buildTechStack() {
 function toggleTool(el) {
   var cat = el.dataset.cat;
   var tool = el.dataset.tool;
-  var isNone = ['No CRM','No automation','No AI tools','No system',
-    'Manual payroll','Traditional bank','Manual','Manual invoicing',
-    'Excel only','External adviser','Other'].indexOf(tool) > -1;
+  var NONE_TOOLS = ['None','Other','Manual','Manual payroll','Manual invoicing',
+    'Traditional bank','External accountant','Excel only',
+    'No automation','No system'];
+  var isNone = NONE_TOOLS.indexOf(tool) > -1 || tool === 'Other';
 
   if(!S.techStack[cat]) S.techStack[cat] = [];
 
@@ -613,9 +614,9 @@ function toggleTool(el) {
     el.classList.add('on');
   } else {
     // If selecting a real tool, deselect any "none" option first
-    var noneVals = ['No CRM','No automation','No AI tools','No system',
-      'Manual payroll','Traditional bank','Manual','Manual invoicing',
-      'Excel only','External adviser','Other'];
+    var noneVals = ['None','Other','Manual','Manual payroll','Manual invoicing',
+      'Traditional bank','External accountant','Excel only',
+      'No automation','No system'];
     S.techStack[cat] = S.techStack[cat].filter(function(t){
       return noneVals.indexOf(t) === -1;
     });
