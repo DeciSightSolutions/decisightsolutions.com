@@ -338,14 +338,16 @@ window.addEventListener('DOMContentLoaded', function() {
 </div>
 <script>
 (function(){
-  if(sessionStorage.getItem('ds_access')==='yes'){
-    document.getElementById('pw-overlay').style.display='none';
-  }
+  try {
+    if(localStorage.getItem('ds_access')==='DecisightSolutions2026'){
+      document.getElementById('pw-overlay').style.display='none';
+    }
+  } catch(e) {}
 })();
 function checkPw(){
-  var v=document.getElementById('pw-input').value;
+  var v=document.getElementById('pw-input').value.trim();
   if(v==='DecisightSolutions2026'){
-    sessionStorage.setItem('ds_access','yes');
+    try { localStorage.setItem('ds_access','DecisightSolutions2026'); } catch(e) {}
     document.getElementById('pw-overlay').style.display='none';
   } else {
     document.getElementById('pw-error').style.display='block';
