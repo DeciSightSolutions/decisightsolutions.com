@@ -127,11 +127,12 @@ canvas{display:block;position:fixed;top:46px;left:0;width:100%;height:calc(100vh
       <svg id="iPlay" viewBox="0 0 24 24" fill="#09090b" stroke="none"><polygon points="5 3 19 12 5 21"/></svg>
       <svg id="iPause" viewBox="0 0 24 24" fill="#09090b" stroke="none" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
     </button>
-    <button class="bsm" id="btnMute" onclick="toggleMute()">
-      <svg id="iVol" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-      <svg id="iMute" viewBox="0 0 24 24" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15" stroke="#ef4444"/><line x1="17" y1="9" x2="23" y2="15" stroke="#ef4444"/></svg>
+    <button id="btnMute" onclick="toggleMute()" title="Mute / Unmute" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid #1a2438;border-radius:8px;cursor:pointer;padding:0 10px;height:32px;transition:all .2s">
+      <svg id="iVol" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6a8898" stroke-width="1.8" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <svg id="iMute" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="#ef4444"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+      <span id="muteLabel" style="font-family:'DM Mono',monospace;font-size:9px;color:#6a8898;letter-spacing:.04em">SOUND</span>
     </button>
-    <button class="bsm" id="btnEL" onclick="showVoiceModal()" style="font-size:8px;font-family:DM Mono,monospace;color:#384858;width:auto;padding:0 8px;border-radius:6px">🎙 Voices</button>
+    <div id="btnEL" style="font-size:8px;font-family:DM Mono,monospace;color:#384858;padding:0 8px;border-radius:6px;border:1px solid #1a2438;height:32px;display:flex;align-items:center;gap:4px"><span id="voiceStatus" style="width:6px;height:6px;border-radius:50%;background:#384858;display:inline-block"></span><span id="voiceLabel">Voice</span></div>
   </div>
   <div class="prog">
     <div class="pbar"><div class="pfill" id="pfill"></div></div>
@@ -1588,8 +1589,8 @@ function toggleMute(){
   document.getElementById('btnMute').className=muted?'bsm muted':'bsm';
 }
 
-function showVoiceModal(){document.getElementById('voiceModal').style.display='flex';}
-function closeVoiceModal(){document.getElementById('voiceModal').style.display='none';}
+function showVoiceModal(){}
+function closeVoiceModal(){}
 
 // ═══════════════════════════════════════════════════
 // SIMULATION ENGINE
@@ -1774,6 +1775,31 @@ function loop(ts){
 
 buildPills(); startTimer(); requestAnimationFrame(loop);
 
+// Check if TTS Worker is available and show status
+(async function checkVoice(){
+  try {
+    var r = await fetch(TTS_WORKER_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:'ds', text:'test'})
+    });
+    var dot = document.getElementById('voiceStatus');
+    var lbl = document.getElementById('voiceLabel');
+    if(r.ok){
+      dot.style.background='#22c55e';
+      dot.style.boxShadow='0 0 6px #22c55e';
+      lbl.style.color='#22c55e';
+      lbl.textContent='Voice ON';
+    } else {
+      dot.style.background='#ef4444';
+      lbl.textContent='Voice OFF';
+    }
+  } catch(e) {
+    // Worker not reachable - browser voices only
+    var lbl=document.getElementById('voiceLabel');
+    if(lbl) lbl.textContent='Browser Voice';
+  }
+})();
+
 // Init voice button state
 (function(){
   var btn = document.getElementById('btnEL');
@@ -1782,51 +1808,6 @@ buildPills(); startTimer(); requestAnimationFrame(loop);
 </script>
 
 <!-- Voice Modal -->
-<div id="voiceModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(4,6,10,.92);backdrop-filter:blur(14px);align-items:center;justify-content:center">
-  <div style="background:#0d1420;border:1.5px solid rgba(255,255,255,.1);border-radius:16px;padding:28px 32px;width:500px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,.95)">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-      <div style="width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e"></div>
-      <span style="font-family:Syne,sans-serif;font-size:17px;font-weight:800;color:#f0f4f8">Voice Setup — ElevenLabs</span>
-    </div>
-    <p style="font-family:DM Mono,monospace;font-size:10px;color:#384858;margin-bottom:18px;line-height:1.75">
-      The demo uses a <b style="color:#c0d0dc">Cloudflare Worker</b> to call ElevenLabs securely.<br>
-      Two steps — takes 5 minutes total.
-    </p>
 
-    <div style="counter-reset:step">
-    <!-- Step 1 -->
-    <div style="display:flex;gap:12px;margin-bottom:14px">
-      <div style="width:24px;height:24px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:DM Mono,monospace;font-size:11px;color:#22c55e;flex-shrink:0">1</div>
-      <div>
-        <div style="font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:#f0f4f8;margin-bottom:4px">Deploy the Cloudflare Worker</div>
-        <div style="font-family:DM Mono,monospace;font-size:9.5px;color:#384858;line-height:1.65">
-          Go to <span style="color:#22c55e">dash.cloudflare.com</span> → Workers & Pages → Create → paste the Worker file.<br>
-          Name it <b style="color:#c0d0dc">decisight-tts</b> → Add secret <b style="color:#c0d0dc">EL_KEY</b> = your ElevenLabs key → Deploy.
-        </div>
-      </div>
-    </div>
-    <!-- Step 2 -->
-    <div style="display:flex;gap:12px;margin-bottom:20px">
-      <div style="width:24px;height:24px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:DM Mono,monospace;font-size:11px;color:#22c55e;flex-shrink:0">2</div>
-      <div>
-        <div style="font-family:Syne,sans-serif;font-size:12px;font-weight:700;color:#f0f4f8;margin-bottom:4px">Upload demo to GitHub Pages</div>
-        <div style="font-family:DM Mono,monospace;font-size:9.5px;color:#384858;line-height:1.65">
-          Push <b style="color:#c0d0dc">demo-iso.html</b> → <b style="color:#c0d0dc">demo/index.html</b> on GitHub.<br>
-          The Worker URL is already set in the code. Done.
-        </div>
-      </div>
-    </div>
-    </div>
-
-    <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-family:DM Mono,monospace;font-size:9px;color:#384858;line-height:1.7">
-      🔒 Your ElevenLabs key stays in Cloudflare as a secret — never in the browser or HTML source.<br>
-      🎙 Voices: Thomas→Adam · Sara→Bella · Marc→Arnold · Anna→Dorothy · Kim→Aria · DS→Callum
-    </div>
-
-    <button onclick="closeVoiceModal()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px;font-family:DM Mono,monospace;font-size:12px;color:#c0d0dc;cursor:pointer">
-      Close — using browser voices for now
-    </button>
-  </div>
-</div>
 </body>
 </html>
