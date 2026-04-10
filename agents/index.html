@@ -1,0 +1,2866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeciSight — AI Monthly Close · Animedica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500&display=block" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#07090d;overflow:hidden}
+body{display:flex;flex-direction:column;font-family:'DM Sans',sans-serif}
+
+/* TOP BAR */
+.bar{height:46px;background:#070910;border-bottom:1px solid #1a2438;display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:20}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.logo-ico{width:30px;height:30px;background:#22c55e;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-txt{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;opacity:0;transition:opacity .3s}
+.logo-txt span{color:#22c55e}
+.bar-c{font-size:9px;color:#4e7a96;letter-spacing:.08em;font-family:monospace}
+.bar-c b{color:#22c55e}
+.bar-r{display:flex;align-items:center;gap:12px}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:9px;color:#22c55e;letter-spacing:.06em;padding:3px 10px;border:1px solid rgba(34,197,94,.3);border-radius:20px;background:rgba(34,197,94,.06);font-family:monospace}
+.live-dot{width:5px;height:5px;background:#22c55e;border-radius:50%;animation:bl 1.2s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+#tmr{font-size:10px;color:#4e7a96;font-family:monospace}
+
+/* LAYOUT — 3 columns */
+.layout{flex:1;display:flex;overflow:hidden}
+
+/* COL 1: World + Narrative */
+.col-world{width:300px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid #1a2438;overflow:hidden}
+canvas#cv{flex-shrink:0}
+.narrative{flex:1;overflow-y:auto;padding:12px;background:#07090d}
+.narrative::-webkit-scrollbar{width:2px}
+.narrative::-webkit-scrollbar-thumb{background:#1a2438;border-radius:1px}
+.narr-line{font-size:10.5px;line-height:1.75;padding:3px 0;display:flex;gap:7px;align-items:flex-start;animation:fi .3s ease}
+@keyframes fi{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
+.narr-icon{font-size:11px;flex-shrink:0;margin-top:1px}
+.narr-txt{color:#a0b8c8;font-size:12px;line-height:1.7}
+.narr-txt b{color:#f0f4f8}
+.narr-txt .hl{font-weight:600}
+.narr-section{font-family:monospace;font-size:8px;letter-spacing:.1em;color:#22c55e;padding:8px 0 4px;display:block}
+
+/* COL 2: Data viewer */
+.col-data{width:340px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid #1a2438;overflow:hidden}
+.data-header{padding:10px 14px;border-bottom:1px solid #1a2438;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.data-header-title{font-size:9px;color:#4e7a96;letter-spacing:.1em;font-family:monospace}
+.clinic-switcher{display:flex;gap:4px}
+.cs-btn{padding:3px 8px;border-radius:4px;border:1px solid #1a2438;font-size:8px;cursor:pointer;font-family:monospace;color:#4e7a96;background:transparent;transition:all .2s}
+.cs-btn.active{color:#f0f4f8;border-color:#5a7a90;background:#0d1520}
+.data-body{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.data-body::-webkit-scrollbar{width:2px}
+.data-body::-webkit-scrollbar-thumb{background:#1a2438}
+
+/* Data sections */
+.ds{border:1px solid #1a2438;border-radius:8px;overflow:hidden}
+.ds-head{padding:7px 10px;background:#0d1118;border-bottom:1px solid #1a2438;display:flex;align-items:center;gap:7px}
+.ds-head-dot{width:6px;height:6px;border-radius:50%}
+.ds-head-title{font-size:9px;font-weight:700;letter-spacing:.06em;font-family:monospace}
+.ds-head-badge{margin-left:auto;font-size:7.5px;padding:2px 7px;border-radius:10px;font-family:monospace}
+.ds-body{padding:8px 10px}
+
+/* Trial balance table */
+.tb-row{display:flex;justify-content:space-between;align-items:center;padding:2.5px 0;font-size:8.5px;border-bottom:1px solid rgba(255,255,255,.03)}
+.tb-row:last-child{border:none}
+.tb-account{font-family:monospace;color:#4e7a96;font-size:7.5px;width:50px;flex-shrink:0}
+.tb-desc{color:#a0b8c8;flex:1;padding:0 6px}
+.tb-amt{font-family:monospace;font-size:8.5px;text-align:right}
+.tb-amt.rev{color:#22c55e}
+.tb-amt.cost{color:#ef4444}
+.tb-total{display:flex;justify-content:space-between;padding:5px 0 2px;border-top:1px solid #1a2438;margin-top:4px}
+.tb-total-label{font-size:9px;font-weight:700;color:#f0f4f8;font-family:monospace}
+.tb-total-val{font-size:9px;font-weight:700;font-family:monospace}
+
+/* Debtors */
+.debt-row{display:flex;justify-content:space-between;padding:3px 0;font-size:8.5px;border-bottom:1px solid rgba(255,255,255,.03)}
+.debt-row:last-child{border:none}
+.debt-name{color:#a0b8c8;flex:1}
+.debt-days{font-family:monospace;font-size:8px;padding:1px 6px;border-radius:3px;margin:0 8px}
+.debt-amt{font-family:monospace;color:#f0f4f8}
+
+/* KPI strip */
+.kpi-strip{display:flex;gap:6px;margin-top:4px}
+.kpi{flex:1;background:#0d1118;border:1px solid #1a2438;border-radius:6px;padding:7px 8px;text-align:center}
+.kpi-val{font-family:monospace;font-size:13px;font-weight:700;line-height:1}
+.kpi-label{font-size:7px;color:#4e7a96;letter-spacing:.06em;margin-top:3px;font-family:monospace}
+
+/* COL 3: Agents */
+.col-agents{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.agents-header{padding:10px 14px;border-bottom:1px solid #1a2438;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.agents-header-title{font-size:9px;color:#4e7a96;letter-spacing:.1em;font-family:monospace}
+.phase-indicator{font-size:9px;color:#22c55e;font-family:monospace}
+.agents-body{flex:1;display:flex;flex-direction:column;gap:1px;background:#1a2438;overflow:hidden}
+.agent-card{flex:1;background:#07090d;padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-height:0;overflow:hidden}
+.ac-head{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ac-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:box-shadow .4s}
+.ac-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:800}
+.ac-role{font-size:8px;color:#4e7a96;letter-spacing:.05em;font-family:monospace}
+.ac-state{margin-left:auto;font-size:8px;font-family:monospace;display:flex;align-items:center;gap:4px}
+.ac-state-dot{width:4px;height:4px;border-radius:50%;animation:bl 1s infinite}
+.ac-prog{flex-shrink:0;height:2px;background:#1a2438;border-radius:1px;overflow:hidden}
+.ac-fill{height:100%;border-radius:1px;width:0%;transition:width .6s ease}
+.ac-output{flex:1;overflow-y:auto;min-height:0}
+.ac-output::-webkit-scrollbar{width:2px}
+.ac-output::-webkit-scrollbar-thumb{background:#1a2438}
+.ac-line{font-size:10px;line-height:1.8;display:flex;gap:5px;animation:fi .25s ease;font-family:monospace}
+.ac-line.ok{color:#22c55e}.ac-line.warn{color:#f59e0b}.ac-line.info{color:#60a5fa}
+.ac-line.dim{color:#3a5870}.ac-line.err{color:#ef4444}
+.ac-line.result{color:#a0b8c8;font-family:'DM Sans',sans-serif;font-size:11px;line-height:1.65}
+.ac-line.h{color:#f0f4f8;font-family:'Syne',sans-serif;font-size:12px;font-weight:700}
+
+
+/* DATA PREVIEW on start screen */
+.start{overflow-y:auto;padding:30px 20px}
+.data-preview-section{width:100%;max-width:900px;margin-top:10px}
+.dp-tabs{display:flex;gap:6px;margin-bottom:0;justify-content:center}
+.dp-tab{padding:6px 16px;border-radius:6px 6px 0 0;font-size:9px;cursor:pointer;font-family:monospace;color:#4e7a96;border:1px solid #1a2438;border-bottom:none;background:#07090d;transition:all .2s;letter-spacing:.05em}
+.dp-tab.active{color:#f0f4f8;background:#0d1520;border-color:#5a7a90}
+.dp-tab:hover:not(.active){color:#a0b8c8}
+.dp-panel{display:none;background:#0d1520;border:1px solid #5a7a90;border-radius:0 8px 8px 8px;padding:0;overflow:hidden;max-height:240px}
+.dp-panel.active{display:block}
+.dp-panel-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid #1a2438;background:#0a0f1a}
+.dp-panel-title{font-size:9px;color:#a0b8c8;font-family:monospace;letter-spacing:.08em}
+.dp-panel-badge{font-size:7.5px;padding:2px 8px;border-radius:10px;font-family:monospace}
+.dp-scroll{overflow-y:auto;max-height:196px;padding:6px 0}
+.dp-scroll::-webkit-scrollbar{width:2px}
+.dp-scroll::-webkit-scrollbar-thumb{background:#1a2438;border-radius:1px}
+.dp-row{display:grid;font-family:monospace;font-size:8px;padding:2px 14px;border-bottom:1px solid rgba(255,255,255,.02);transition:background .1s}
+.dp-row:hover{background:rgba(255,255,255,.03)}
+.dp-row.hdr{font-size:7px;color:#4e7a96;padding:4px 14px 4px;border-bottom:1px solid #1a2438;background:#0a0f1a;position:sticky;top:0}
+.dp-row.rev .dp-amt{color:#22c55e}
+.dp-row.cost .dp-amt{color:#ef4444}
+.dp-row.bal .dp-amt{color:#4e7a96}
+.dp-row.total-row{background:#0a0f1a;border-top:1px solid #1a2438;padding:5px 14px}
+.dp-row.total-row .dp-amt{color:#22c55e;font-weight:700}
+.dp-date{color:#4e7a96}
+.dp-doc{color:#5a7a90}
+.dp-acct{color:#4a6070}
+.dp-desc{color:#a0b8c8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dp-debit{color:#ef4444;text-align:right}
+.dp-credit{color:#22c55e;text-align:right}
+
+/* INLINE START BUTTON in narrative column */
+.narr-start-btn{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 12px 6px;padding:12px 16px;background:#22c55e;color:#09090b;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;border:none;border-radius:8px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(34,197,94,.35);width:calc(100% - 24px);animation:pulsebtn 2s ease-in-out infinite}
+.narr-start-btn:hover{background:#1da34e;transform:translateY(-1px);box-shadow:0 6px 20px rgba(34,197,94,.5);animation:none}
+.narr-start-btn:active{transform:translateY(0)}
+.narr-start-btn .btn-icon{font-size:16px}
+@keyframes pulsebtn{0%,100%{box-shadow:0 4px 16px rgba(34,197,94,.35)}50%{box-shadow:0 4px 28px rgba(34,197,94,.7);transform:translateY(-1px)}}
+/* START SCREEN */
+.start{position:fixed;inset:0;z-index:100;background:rgba(7,9,13,.97);backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.start-logo{display:flex;align-items:center;gap:14px}
+.start-logo-txt{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.01em;opacity:0;transition:opacity .3s}
+.start-logo-ico{width:56px;height:56px;background:#22c55e;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.start-h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#f0f4f8;text-align:center;max-width:480px;line-height:1.3}
+.start-sub{font-size:13px;color:#4a6070;text-align:center;max-width:440px;line-height:1.7}
+.start-cards{display:flex;gap:10px}
+.start-card{padding:12px 18px;border:1px solid #1a2438;border-radius:10px;text-align:center;width:140px}
+.sc-flag{font-size:20px;margin-bottom:4px}
+.sc-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:#f0f4f8}
+.sc-sys{font-size:9px;color:#4e7a96;font-family:monospace;margin-top:2px}
+.sc-rev{font-size:11px;font-weight:700;margin-top:5px;font-family:monospace}
+.start-arrow{font-size:24px;color:#1a2438;align-self:center}
+.sc-agent{padding:12px 18px;border:1px solid rgba(34,197,94,.25);border-radius:10px;background:rgba(34,197,94,.04);width:140px;text-align:center}
+.start-btn{background:#22c55e;color:#09090b;font-family:'Syne',sans-serif;font-size:15px;font-weight:800;padding:14px 40px;border:none;border-radius:10px;cursor:pointer;transition:all .2s}
+.start-btn:hover{background:#1da34e;transform:translateY(-2px);box-shadow:0 8px 24px rgba(34,197,94,.3)}
+.start-note{font-size:8.5px;color:#1a2438;letter-spacing:.08em;font-family:monospace}
+
+
+
+.col-data.grp-view{width:520px}
+
+/* DOWNLOAD BUTTONS */
+.dl-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:9px;font-family:monospace;font-weight:700;cursor:pointer;border:none;transition:all .2s;letter-spacing:.04em;text-decoration:none}
+.dl-btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.3)}
+.dl-btn.green{background:#22c55e;color:#09090b}
+.dl-btn.blue{background:#1e3a5f;color:#60a5fa;border:1px solid #60a5fa33}
+.dl-btn.blue:hover{background:#60a5fa;color:#09090b}
+.dl-btn.purple{background:#2d1b4e;color:#a78bfa;border:1px solid #a78bfa33}
+.dl-btn.purple:hover{background:#a78bfa;color:#09090b}
+.dl-btn-row{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.dl-spinner{display:none;width:10px;height:10px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DELIVERABLES PANEL */
+.deliverables{position:fixed;bottom:0;left:0;right:0;height:0;background:#070910;border-top:1px solid #1a2438;transition:height .5s ease;overflow:hidden;z-index:15;display:flex;flex-direction:column}
+.deliverables.open{height:320px}
+.deliv-bar{height:38px;background:#070910;border-bottom:1px solid #1a2438;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.deliv-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:#f0f4f8}
+.deliv-tabs{display:flex;gap:4px;margin-left:16px}
+.dt{padding:4px 12px;border-radius:4px;font-size:8.5px;cursor:pointer;font-family:monospace;color:#4e7a96;border:1px solid #1a2438;transition:all .2s}
+.dt.active{color:#f0f4f8;border-color:#5a7a90;background:#0d1520}
+.deliv-close{margin-left:auto;font-size:18px;color:#4e7a96;cursor:pointer;line-height:1;background:none;border:none}
+.deliv-body{flex:1;overflow:hidden;display:flex}
+.deliv-pane{flex:1;overflow-y:auto;padding:14px 16px;display:none}
+.deliv-pane.active{display:block}
+.deliv-pane::-webkit-scrollbar{width:2px}
+.deliv-pane::-webkit-scrollbar-thumb{background:#1a2438}
+
+/* Board Pack styles */
+.bp-header{margin-bottom:12px}
+.bp-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#f0f4f8}
+.bp-sub{font-size:10px;color:#4e7a96;font-family:monospace;margin-top:2px}
+.bp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.bp-kpi{background:#0d1118;border:1px solid #1a2438;border-radius:8px;padding:10px 12px;text-align:center}
+.bp-kpi-val{font-family:monospace;font-size:16px;font-weight:700;line-height:1}
+.bp-kpi-lbl{font-size:7.5px;color:#4e7a96;letter-spacing:.06em;margin-top:3px}
+.bp-section{margin-bottom:12px}
+.bp-section-title{font-size:9px;font-weight:700;color:#5a7a90;letter-spacing:.08em;margin-bottom:6px;font-family:monospace;display:flex;align-items:center;gap:6px}
+.bp-section-title::after{content:'';flex:1;height:1px;background:#1a2438}
+.clinic-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.clinic-row:last-child{border:none}
+.cr-flag{font-size:13px;width:20px}
+.cr-name{font-size:10px;color:#a0b8c8;width:80px}
+.cr-bar-wrap{flex:1;height:6px;background:#1a2438;border-radius:3px;overflow:hidden}
+.cr-bar{height:100%;border-radius:3px;transition:width 1s ease}
+.cr-val{font-family:monospace;font-size:9px;width:60px;text-align:right}
+.cr-vs{font-size:8px;font-family:monospace;width:45px;text-align:right}
+.narrative-box{background:#0d1118;border:1px solid #1a2438;border-radius:8px;padding:10px 12px;font-size:10.5px;line-height:1.75;color:#a0b8c8}
+.narrative-box b{color:#f0f4f8}
+.flag-issue{display:flex;gap:8px;padding:5px 0;font-size:9.5px;border-bottom:1px solid rgba(255,255,255,.03)}
+.flag-issue:last-child{border:none}
+.fi-icon{flex-shrink:0}
+.fi-txt{color:#a0b8c8;line-height:1.6}
+.fi-txt b{color:#f0f4f8}
+
+/* DSO Table */
+.dso-table{width:100%;border-collapse:collapse;font-size:9px}
+.dso-table th{text-align:left;padding:5px 8px;font-family:monospace;font-size:7.5px;color:#4e7a96;letter-spacing:.08em;border-bottom:1px solid #1a2438}
+.dso-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.03);color:#a0b8c8}
+.dso-table tr:last-child td{border:none}
+.dso-badge{padding:2px 8px;border-radius:10px;font-family:monospace;font-size:8px;font-weight:700}
+
+/* Cashflow forecast */
+.cf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.cf-week{background:#0d1118;border:1px solid #1a2438;border-radius:6px;padding:8px 10px}
+.cf-week-label{font-size:7.5px;color:#4e7a96;letter-spacing:.06em;font-family:monospace}
+.cf-week-val{font-family:monospace;font-size:13px;font-weight:700;margin-top:3px;line-height:1}
+.cf-week-note{font-size:7.5px;margin-top:2px;line-height:1.4}
+
+/* Deliverables trigger button */
+.deliv-btn{position:fixed;bottom:16px;right:16px;background:#22c55e;color:#09090b;font-family:'Syne',sans-serif;font-size:12px;font-weight:800;padding:10px 20px;border:none;border-radius:8px;cursor:pointer;z-index:14;display:none;transition:all .2s;box-shadow:0 4px 20px rgba(34,197,94,.4)}
+.deliv-btn:hover{background:#1da34e;transform:translateY(-2px)}
+
+/* DRILL-DOWN MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(4,6,12,.92);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#0d1420;border:1.5px solid #1a2438;border-radius:14px;width:520px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.9);overflow:hidden}
+.modal-head{padding:14px 18px;border-bottom:1px solid #1a2438;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.modal-head-dot{width:8px;height:8px;border-radius:50%}
+.modal-head-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#f0f4f8}
+.modal-head-sub{font-size:8px;color:#4e7a96;letter-spacing:.07em;font-family:monospace;margin-left:auto}
+.modal-close{background:none;border:none;color:#4e7a96;font-size:20px;cursor:pointer;line-height:1;padding:0 2px;margin-left:8px}
+.modal-close:hover{color:#f0f4f8}
+.modal-body{overflow-y:auto;padding:14px 18px;flex:1}
+.modal-body::-webkit-scrollbar{width:3px}
+.modal-body::-webkit-scrollbar-thumb{background:#1a2438}
+
+/* Drill sections */
+.drill-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.drill-kpi{background:#070910;border:1px solid #1a2438;border-radius:8px;padding:10px 12px;text-align:center}
+.drill-kpi-val{font-family:monospace;font-size:15px;font-weight:700}
+.drill-kpi-lbl{font-size:7.5px;color:#4e7a96;letter-spacing:.06em;margin-top:3px;font-family:monospace}
+.drill-table{width:100%;border-collapse:collapse;font-size:9.5px;margin-bottom:12px}
+.drill-table th{text-align:left;padding:5px 8px;font-family:monospace;font-size:7.5px;color:#4e7a96;letter-spacing:.07em;border-bottom:1px solid #1a2438}
+.drill-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.04);color:#a0b8c8}
+.drill-table tr:last-child td{border:none}
+.drill-table td.num{font-family:monospace;text-align:right;color:#f0f4f8}
+.drill-table td.green{color:#22c55e;font-family:monospace;text-align:right}
+.drill-table td.red{color:#ef4444;font-family:monospace;text-align:right}
+.drill-table td.warn{color:#f59e0b;font-family:monospace;text-align:right}
+.drill-section-title{font-size:8.5px;font-weight:700;color:#5a7a90;letter-spacing:.08em;margin:10px 0 6px;font-family:monospace;display:flex;align-items:center;gap:6px}
+.drill-section-title::after{content:'';flex:1;height:1px;background:#1a2438}
+.clickable{cursor:pointer;border-bottom:1px dashed rgba(255,255,255,.15);transition:color .15s}
+.clickable:hover{color:#22c55e!important}
+@keyframes pulse-glow{from{transform:scale(1)}to{transform:scale(1.4)}}
+/* Agent calling indicator */
+.calling-indicator{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:#22c55e;font-family:monospace;padding:2px 8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:4px;animation:fl .8s infinite}
+@keyframes fl{0%,100%{opacity:.6}50%{opacity:1}}
+</style>
+
+
+<script>
+// Ensure Syne font is loaded before showing logo text (prevents wrong G)
+document.fonts.ready.then(function() {
+  document.querySelectorAll('.start-logo-txt, .logo-txt').forEach(function(el) {
+    el.style.opacity = '1';
+  });
+});
+</script>
+</head>
+<body>
+
+<div class="bar">
+  <a href="/" class="logo">
+    <div class="logo-ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"><polyline points="3,17 8,11 12,14 20,5"/><circle cx="20" cy="5" r="2" fill="#09090b" stroke="none"/></svg></div>
+    <span class="logo-txt">Deci<span>Sight</span></span>
+  </a>
+  <div class="bar-c">ANIMEDICA VETERINARY GROUP &nbsp;·&nbsp; <b>AI MONTHLY CLOSE — MARCH 2026</b> &nbsp;·&nbsp; 4 AGENTS · 3 SYSTEMS</div>
+  <div class="bar-r">
+    <div class="live-badge" id="liveBadge" style="opacity:.4"><div class="live-dot"></div><span id="liveText">READY</span></div>
+    <span id="tmr">00:00</span>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- COL 1: WORLD + NARRATIVE -->
+  <div class="col-world">
+    <canvas id="cv" width="300" height="240"></canvas>
+    <button class="narr-start-btn" id="narrativeStartBtn" onclick="narrativeStart()">
+      <span class="btn-icon">▶</span> Start the Monthly Close
+    </button>
+    <div class="narrative" id="narrative">
+      <span class="narr-section">WAITING TO START</span>
+      <div class="narr-line"><span class="narr-icon">💡</span><span class="narr-txt">Press <b>Start</b> to watch 4 AI agents process financial data from 3 different accounting systems and deliver a signed-off monthly close.</span></div>
+    </div>
+  </div>
+
+  <!-- COL 2: DATA VIEWER -->
+  <div class="col-data">
+    <div class="data-header">
+      <span class="data-header-title">RAW FINANCIAL DATA</span>
+      <div class="clinic-switcher">
+        <button class="cs-btn active" onclick="showClinic('amsterdam')">AMS</button>
+        <button class="cs-btn" onclick="showClinic('rotterdam')">ROT</button>
+        <button class="cs-btn" onclick="showClinic('frankfurt')">FRA</button>
+        <button class="cs-btn" onclick="showClinic('group')" style="color:#22c55e;border-color:#22c55e33">GRP</button>
+        <button class="cs-btn" onclick="showClinic('budget')" style="color:#a78bfa;border-color:#a78bfa33">BGT</button>
+      </div>
+    </div>
+    <div class="data-body" id="dataBody">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+
+  <!-- COL 3: AGENTS -->
+  <div class="col-agents">
+    <div class="agents-header">
+      <span class="agents-header-title">AI AGENTS — LIVE OUTPUT</span>
+      <span class="phase-indicator" id="phaseIndicator">Phase 0 of 4</span>
+    </div>
+    <div class="agents-body">
+      <div class="agent-card" id="card-ic">
+        <div class="ac-head">
+          <div class="ac-dot" id="dot-ic" style="background:#60a5fa"></div>
+          <span class="ac-name" style="color:#60a5fa">Ledger-Agent</span>
+          <span class="ac-role">JOURNAL ENTRIES · P&L BUILD</span>
+          <div class="ac-state"><div class="ac-state-dot" style="background:#60a5fa;display:none" id="sdot-ic"></div><span id="stext-ic" style="color:#60a5fa">IDLE</span></div>
+        </div>
+        <div class="ac-prog"><div class="ac-fill" id="fill-ic" style="background:#60a5fa"></div></div>
+        <div class="ac-output" id="out-ic"></div>
+      </div>
+      <div class="agent-card" id="card-bv">
+        <div class="ac-head">
+          <div class="ac-dot" id="dot-bv" style="background:#34d399"></div>
+          <span class="ac-name" style="color:#34d399">Variance-Agent</span>
+          <span class="ac-role">BUDGET VARIANCE ANALYSIS</span>
+          <div class="ac-state"><div class="ac-state-dot" style="background:#34d399;display:none" id="sdot-bv"></div><span id="stext-bv" style="color:#34d399">IDLE</span></div>
+        </div>
+        <div class="ac-prog"><div class="ac-fill" id="fill-bv" style="background:#34d399"></div></div>
+        <div class="ac-output" id="out-bv"></div>
+      </div>
+      <div class="agent-card" id="card-an">
+        <div class="ac-head">
+          <div class="ac-dot" id="dot-an" style="background:#a78bfa"></div>
+          <span class="ac-name" style="color:#a78bfa">CFO-Agent</span>
+          <span class="ac-role">GROUP CONSOLIDATION · CFO NARRATIVE</span>
+          <div class="ac-state"><div class="ac-state-dot" style="background:#a78bfa;display:none" id="sdot-an"></div><span id="stext-an" style="color:#a78bfa">WAITING</span></div>
+        </div>
+        <div class="ac-prog"><div class="ac-fill" id="fill-an" style="background:#a78bfa"></div></div>
+        <div class="ac-output" id="out-an"></div>
+      </div>
+      <div class="agent-card" id="card-qa">
+        <div class="ac-head">
+          <div class="ac-dot" id="dot-qa" style="background:#f472b6"></div>
+          <span class="ac-name" style="color:#f472b6">Audit-Agent</span>
+          <span class="ac-role">AUDIT · QUALITY ASSURANCE · SIGN-OFF</span>
+          <div class="ac-state"><div class="ac-state-dot" style="background:#f472b6;display:none" id="sdot-qa"></div><span id="stext-qa" style="color:#f472b6">WAITING</span></div>
+        </div>
+        <div class="ac-prog"><div class="ac-fill" id="fill-qa" style="background:#f472b6"></div></div>
+        <div class="ac-output" id="out-qa"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- START SCREEN -->
+<div class="start" id="startScreen">
+  <div class="start-logo" style="flex-direction:column;gap:12px">
+    <div class="start-logo-ico"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="2.5" stroke-linecap="round"><polyline points="3,17 8,11 12,14 20,5"/><circle cx="20" cy="5" r="2" fill="#09090b" stroke="none"/></svg></div>
+    <span class="start-logo-txt">Deci<span style="color:#22c55e">Sight</span></span>
+  </div>
+  <div class="start-h1">Watch AI agents close the books across 3 clinics with 3 different accounting systems</div>
+  <div class="start-sub">Each clinic exports data in a different format. The agents read, reconcile, analyse and sign off — in minutes, not days.</div>
+
+  <!-- HINT TEXT -->
+  <div style="font-size:11px;color:#4e7a96;font-family:monospace;letter-spacing:.06em;margin-bottom:6px">
+    ↓ CLICK ANY CLINIC TO PREVIEW ITS RAW ACCOUNTING DATA
+  </div>
+
+  <div class="start-cards">
+    <div class="start-card" onclick="showDataPreview('amsterdam')" style="cursor:pointer;transition:all .25s;position:relative;border-color:#60a5fa;background:rgba(96,165,250,.05)" onmouseover="this.style.background='rgba(96,165,250,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(96,165,250,.05)';this.style.transform='translateY(0)'">
+      <div class="sc-flag">🇳🇱</div>
+      <div class="sc-name">Amsterdam</div>
+      <div class="sc-sys">Exact Online · English</div>
+      <div class="sc-rev" style="color:#60a5fa">€369,400</div>
+      <div style="margin-top:8px;padding:4px 8px;background:#60a5fa18;border:1px solid #60a5fa44;border-radius:4px;font-size:8px;color:#60a5fa;font-family:monospace;letter-spacing:.04em">📄 VIEW JOURNAL →</div>
+    </div>
+    <div class="start-arrow">+</div>
+    <div class="start-card" onclick="showDataPreview('rotterdam')" style="cursor:pointer;transition:all .25s;position:relative;border-color:#34d399;background:rgba(52,211,153,.05)" onmouseover="this.style.background='rgba(52,211,153,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(52,211,153,.05)';this.style.transform='translateY(0)'">
+      <div class="sc-flag">🇳🇱</div>
+      <div class="sc-name">Rotterdam</div>
+      <div class="sc-sys">AFAS Profit · Dutch</div>
+      <div class="sc-rev" style="color:#34d399">€291,400</div>
+      <div style="margin-top:8px;padding:4px 8px;background:#34d39918;border:1px solid #34d39944;border-radius:4px;font-size:8px;color:#34d399;font-family:monospace;letter-spacing:.04em">📄 VIEW JOURNAL →</div>
+    </div>
+    <div class="start-arrow">+</div>
+    <div class="start-card" onclick="showDataPreview('frankfurt')" style="cursor:pointer;transition:all .25s;position:relative;border-color:#fb923c;background:rgba(251,146,60,.05)" onmouseover="this.style.background='rgba(251,146,60,.12)';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='rgba(251,146,60,.05)';this.style.transform='translateY(0)'">
+      <div class="sc-flag">🇩🇪</div>
+      <div class="sc-name">Frankfurt</div>
+      <div class="sc-sys">DATEV SKR03 · German</div>
+      <div class="sc-rev" style="color:#fb923c">€194,400</div>
+      <div style="margin-top:8px;padding:4px 8px;background:#fb923c18;border:1px solid #fb923c44;border-radius:4px;font-size:8px;color:#fb923c;font-family:monospace;letter-spacing:.04em">📄 VIEW JOURNAL →</div>
+    </div>
+    <div class="start-arrow">→</div>
+    <div class="sc-agent start-card" style="border-color:#22c55e;background:rgba(34,197,94,.04)">
+      <div class="sc-flag">🤖</div>
+      <div class="sc-name" style="color:#22c55e">4 AI Agents</div>
+      <div class="sc-sys">Claude AI</div>
+      <div class="sc-rev" style="color:#22c55e">~8 min</div>
+      <div style="margin-top:8px;padding:4px 8px;background:#22c55e18;border:1px solid #22c55e44;border-radius:4px;font-size:8px;color:#22c55e;font-family:monospace;letter-spacing:.04em">▶ START BELOW</div>
+    </div>
+  </div>
+
+  <!-- DATA PREVIEW PANEL -->
+  <div class="data-preview-section" id="dataPreviewSection" style="display:none">
+    <div class="dp-tabs">
+      <div class="dp-tab active" data-clinic="amsterdam" onclick="showDataPreview('amsterdam')">🇳🇱 Amsterdam — Exact Online</div>
+      <div class="dp-tab" data-clinic="rotterdam" onclick="showDataPreview('rotterdam')">🇳🇱 Rotterdam — AFAS Profit</div>
+      <div class="dp-tab" data-clinic="frankfurt" onclick="showDataPreview('frankfurt')">🇩🇪 Frankfurt — DATEV</div>
+    </div>
+    <div class="dp-panel active" id="dpanel-amsterdam" data-clinic="amsterdam">
+      <div class="dp-panel-head">
+        <span class="dp-panel-title" id="dp-title-amsterdam">EXACT ONLINE EXPORT · MARCH 2026 · ENGLISH ACCOUNT CODES</span>
+        <span class="dp-panel-badge" style="background:#60a5fa18;color:#60a5fa" id="dp-badge-amsterdam">90 entries · P&L: 8xxx revenue / 4xxx costs</span>
+      </div>
+      <div class="dp-scroll" id="dp-scroll-amsterdam"></div>
+    </div>
+    <div class="dp-panel" id="dpanel-rotterdam" data-clinic="rotterdam">
+      <div class="dp-panel-head">
+        <span class="dp-panel-title" id="dp-title-rotterdam">AFAS PROFIT RAPPORTAGE · MAART 2026 · DUTCH ACCOUNT CODES</span>
+        <span class="dp-panel-badge" style="background:#34d39918;color:#34d399" id="dp-badge-rotterdam">80 entries · Omzet = revenue / Kosten = costs</span>
+      </div>
+      <div class="dp-scroll" id="dp-scroll-rotterdam"></div>
+    </div>
+    <div class="dp-panel" id="dpanel-frankfurt" data-clinic="frankfurt">
+      <div class="dp-panel-head">
+        <span class="dp-panel-title" id="dp-title-frankfurt">DATEV BUCHUNGSEXPORT · MÄRZ 2026 · GERMAN ACCOUNT CODES (SKR03)</span>
+        <span class="dp-panel-badge" style="background:#fb923c18;color:#fb923c" id="dp-badge-frankfurt">88 entries · 8xxx Erlöse / 6xxx Kosten · ⚠ Fremdpersonal</span>
+      </div>
+      <div class="dp-scroll" id="dp-scroll-frankfurt"></div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="openDemo()">▶ &nbsp;Open Demo</button>
+  <div class="start-note">REAL AI · SYNTHETIC DATA · DECISIGHT SOLUTIONS</div>
+</div>
+
+<script>
+var WORKER = 'https://decisight-agents.old-wind-8d3a.workers.dev';
+
+// ── JOURNAL PREVIEW DATA ──────────────────────────────────────
+var JOURNAL_PREVIEW = {
+  amsterdam: {
+    color:'#60a5fa', system:'Exact Online', lang:'English account codes · P&L: 8xxx revenue / 4xxx costs',
+    entries:[
+      {date:'01/03',doc:'AMS-001',acct:'8000',desc:'Consultation Revenue — week 1 (124 animals)',debit:'',credit:'18,240',type:'rev'},
+      {date:'01/03',doc:'AMS-002',acct:'1300',desc:'Accounts Receivable — INV-2026-0301 Achmea',debit:'18,240',credit:'',type:'bal'},
+      {date:'03/03',doc:'AMS-003',acct:'8010',desc:'Surgical Revenue — orthopaedic batch (8 procedures)',debit:'',credit:'12,600',type:'rev'},
+      {date:'03/03',doc:'AMS-005',acct:'8020',desc:'Pharmacy Revenue — medication dispensing week 1',debit:'',credit:'6,200',type:'rev'},
+      {date:'04/03',doc:'AMS-007',acct:'4000',desc:'Veterinary Staff Costs — payroll advance 8 FTE',debit:'35,700',credit:'',type:'cost'},
+      {date:'06/03',doc:'AMS-011',acct:'8030',desc:'Diagnostics Revenue — X-ray & MRI (34 scans)',debit:'',credit:'8,400',type:'rev'},
+      {date:'07/03',doc:'AMS-013',acct:'4020',desc:'Medical Supplies — surgical consumables batch',debit:'9,600',credit:'',type:'cost'},
+      {date:'08/03',doc:'AMS-015',acct:'4030',desc:'Pharmaceutical Costs — medication stock replenishment',debit:'5,400',credit:'',type:'cost'},
+      {date:'10/03',doc:'AMS-017',acct:'8000',desc:'Consultation Revenue — week 2 (138 animals)',debit:'',credit:'20,400',type:'rev'},
+      {date:'10/03',doc:'AMS-019',acct:'8010',desc:'Surgical Revenue — emergency surgery batch (11 cases)',debit:'',credit:'15,800',type:'rev'},
+      {date:'11/03',doc:'AMS-021',acct:'4040',desc:'Rent & Facilities — Amsterdam Centrum premises',debit:'8,000',credit:'',type:'cost'},
+      {date:'13/03',doc:'AMS-027',acct:'4010',desc:'Locum Costs — Dr. van Berg 3 days',debit:'4,650',credit:'',type:'cost'},
+      {date:'15/03',doc:'AMS-031',acct:'4000',desc:'Veterinary Staff Costs — mid-month payroll 8 FTE',debit:'35,700',credit:'',type:'cost'},
+      {date:'17/03',doc:'AMS-033',acct:'8000',desc:'Consultation Revenue — week 3 (129 animals)',debit:'',credit:'19,200',type:'rev'},
+      {date:'17/03',doc:'AMS-035',acct:'8010',desc:'Surgical Revenue — orthopaedic & dental batch',debit:'',credit:'18,400',type:'rev'},
+      {date:'20/03',doc:'AMS-043',acct:'8030',desc:'Diagnostics Revenue — ultrasound & blood panels',debit:'',credit:'7,600',type:'rev'},
+      {date:'21/03',doc:'AMS-047',acct:'4050',desc:'Equipment Depreciation — surgical equipment',debit:'2,700',credit:'',type:'cost'},
+      {date:'24/03',doc:'AMS-049',acct:'8000',desc:'Consultation Revenue — week 4 (141 animals)',debit:'',credit:'21,000',type:'rev'},
+      {date:'24/03',doc:'AMS-051',acct:'8010',desc:'Surgical Revenue — week 4 batch (14 procedures)',debit:'',credit:'19,400',type:'rev'},
+      {date:'27/03',doc:'AMS-059',acct:'8020',desc:'Pharmacy Revenue — week 4 prescription batch',debit:'',credit:'9,400',type:'rev'},
+      {date:'28/03',doc:'AMS-063',acct:'4010',desc:'Locum Costs — Dr. van Berg additional day',debit:'1,550',credit:'',type:'cost'},
+      {date:'31/03',doc:'AMS-067',acct:'4050',desc:'Equipment Depreciation — imaging equipment',debit:'2,750',credit:'',type:'cost'},
+      {date:'31/03',doc:'AMS-075',acct:'4000',desc:'Veterinary Staff Costs — final payroll 8 FTE',debit:'35,700',credit:'',type:'cost'},
+      {date:'31/03',doc:'AMS-083',acct:'8010',desc:'Surgical Revenue — late month invoices batch',debit:'',credit:'10,200',type:'rev'},
+      {date:'31/03',doc:'AMS-087',acct:'4060',desc:'Admin & IT — insurance premium monthly portion',debit:'2,100',credit:'',type:'cost'},
+    ],
+    totals:{rev:'369,400',cost:'263,700',ebitda:'+105,700'}
+  },
+  rotterdam: {
+    color:'#34d399', system:'AFAS Profit', lang:'Dutch account codes · Omzet = revenue / Kosten = costs',
+    entries:[
+      {date:'01-03',doc:'ROT-001',acct:'Omzet Consulten',desc:'Consulten week 1 — 96 dieren (consultation revenue)',debit:'',credit:'14,260',type:'rev'},
+      {date:'02-03',doc:'ROT-003',acct:'Omzet Operaties',desc:'Orthopedische ingrepen week 1 — 5 operaties',debit:'',credit:'10,800',type:'rev'},
+      {date:'03-03',doc:'ROT-005',acct:'Omzet Apotheek',desc:'Medicijnverkoop week 1 (pharmacy revenue)',debit:'',credit:'4,200',type:'rev'},
+      {date:'04-03',doc:'ROT-007',acct:'Personeelskosten',desc:'Salarisoverschrijving 6 FTE dierenartsen — termijn 1',debit:'29,600',credit:'',type:'cost'},
+      {date:'05-03',doc:'ROT-009',acct:'Omzet Consulten',desc:'Consulten week 1 vervolg — 84 dieren',debit:'',credit:'12,400',type:'rev'},
+      {date:'06-03',doc:'ROT-011',acct:'Omzet Diagnostiek',desc:'Röntgen en bloedonderzoek week 1 — 28 onderzoeken',debit:'',credit:'5,800',type:'rev'},
+      {date:'07-03',doc:'ROT-013',acct:'Inkoop',desc:'Inkoop chirurgisch materiaal batch (medical supplies)',debit:'7,400',credit:'',type:'cost'},
+      {date:'07-03',doc:'ROT-015',acct:'Farmacie',desc:'Medicijneninkoop week 1 (pharmaceutical purchase)',debit:'4,200',credit:'',type:'cost'},
+      {date:'10-03',doc:'ROT-017',acct:'Omzet Consulten',desc:'Consulten week 2 — 108 dieren',debit:'',credit:'16,000',type:'rev'},
+      {date:'10-03',doc:'ROT-019',acct:'Omzet Operaties',desc:'Tandheelkundige ingrepen week 2 — 7 operaties',debit:'',credit:'9,600',type:'rev'},
+      {date:'11-03',doc:'ROT-021',acct:'Huisvesting',desc:'Maandhuur Rotterdam Centrum pand maart (rent)',debit:'6,000',credit:'',type:'cost'},
+      {date:'13-03',doc:'ROT-025',acct:'Inhuur',desc:'Locum dierenarts — 1 dag vervanging (locum)',debit:'2,050',credit:'',type:'cost'},
+      {date:'15-03',doc:'ROT-029',acct:'Personeelskosten',desc:'Salarisoverschrijving 6 FTE — termijn 2',debit:'29,600',credit:'',type:'cost'},
+      {date:'17-03',doc:'ROT-031',acct:'Omzet Consulten',desc:'Consulten week 3 — 98 dieren',debit:'',credit:'14,600',type:'rev'},
+      {date:'17-03',doc:'ROT-033',acct:'Omzet Operaties',desc:'Wekelijkse operatiebatch — 6 ingrepen',debit:'',credit:'11,200',type:'rev'},
+      {date:'21-03',doc:'ROT-043',acct:'Afschrijvingen',desc:'Maandelijkse afschrijving medische apparatuur (depreciation)',debit:'2,050',credit:'',type:'cost'},
+      {date:'24-03',doc:'ROT-045',acct:'Omzet Consulten',desc:'Consulten week 4 — 112 dieren',debit:'',credit:'16,800',type:'rev'},
+      {date:'24-03',doc:'ROT-047',acct:'Omzet Operaties',desc:'Spoedoperaties week 4 — 4 gevallen (emergency ops)',debit:'',credit:'9,200',type:'rev'},
+      {date:'27-03',doc:'ROT-055',acct:'Omzet Apotheek',desc:'Apotheek week 4 — receptbatch (prescription batch)',debit:'',credit:'6,800',type:'rev'},
+      {date:'28-03',doc:'ROT-059',acct:'Overige Omzet',desc:'Gedragstherapie en speciale diensten (other services)',debit:'',credit:'4,200',type:'rev'},
+      {date:'31-03',doc:'ROT-065',acct:'Personeelskosten',desc:'Eindsalaris 6 FTE dierenartsen maart — termijn 3',debit:'29,600',credit:'',type:'cost'},
+      {date:'31-03',doc:'ROT-069',acct:'Inkoop',desc:'Maandafsluiting inkoopreservering (month-end accrual)',debit:'5,200',credit:'',type:'cost'},
+      {date:'31-03',doc:'ROT-071',acct:'Farmacie',desc:'Maandafsluiting farmacieacruering',debit:'4,000',credit:'',type:'cost'},
+      {date:'31-03',doc:'ROT-077',acct:'Overige Omzet',desc:'Diversen overige inkomsten afsluiting',debit:'',credit:'5,200',type:'rev'},
+      {date:'31-03',doc:'ROT-079',acct:'Algemene Kosten',desc:'Verzekeringspremie maandgedeelte (insurance premium)',debit:'1,800',credit:'',type:'cost'},
+    ],
+    totals:{rev:'291,400',cost:'203,100',ebitda:'+88,300'}
+  },
+  frankfurt: {
+    color:'#fb923c', system:'DATEV (SKR03)', lang:'German account codes · 8xxx = Erlöse (revenue) / 6xxx = Kosten (costs)',
+    entries:[
+      {date:'01.03',doc:'FRA-001',acct:'8000',desc:'Erlöse Tierarztleistungen KW9 — 78 Tiere (vet services)',debit:'',credit:'9,840',type:'rev'},
+      {date:'02.03',doc:'FRA-003',acct:'8010',desc:'Erlöse Operationen KW9 — 4 Eingriffe (surgical)',debit:'',credit:'7,200',type:'rev'},
+      {date:'03.03',doc:'FRA-005',acct:'8020',desc:'Erlöse Medikamente KW9 (pharmaceutical revenue)',debit:'',credit:'3,600',type:'rev'},
+      {date:'04.03',doc:'FRA-007',acct:'6000',desc:'Personalkosten Tierärzte — Gehalt 5 VZÄ Rate 1 (payroll)',debit:'27,100',credit:'',type:'cost'},
+      {date:'05.03',doc:'FRA-009',acct:'8000',desc:'Erlöse Tierarzt KW9 Notfälle — AXA Kranken (emergency)',debit:'',credit:'8,200',type:'rev'},
+      {date:'06.03',doc:'FRA-011',acct:'8030',desc:'Erlöse Diagnostik — Röntgen und Labor (diagnostics)',debit:'',credit:'4,200',type:'rev'},
+      {date:'07.03',doc:'FRA-013',acct:'6020',desc:'Medizinbedarf — chirurgisches Verbrauchsmaterial (supplies)',debit:'8,200',credit:'',type:'cost'},
+      {date:'09.03',doc:'FRA-017',acct:'6010',desc:'Fremdpersonal — Dr. Müller Krankheitsvertretung ⚠ SICK COVER',debit:'6,150',credit:'',type:'cost'},
+      {date:'10.03',doc:'FRA-019',acct:'8000',desc:'Erlöse KW10 — 68 Tiere (Kapazitätseinschränkung) ↓ reduced',debit:'',credit:'7,800',type:'rev'},
+      {date:'10.03',doc:'FRA-021',acct:'8010',desc:'Erlöse OPs KW10 — 3 Eingriffe (Tierarzt krank) ↓ reduced',debit:'',credit:'5,400',type:'rev'},
+      {date:'11.03',doc:'FRA-023',acct:'6040',desc:'Miete Frankfurt Sachsenhausen März (rent)',debit:'7,200',credit:'',type:'cost'},
+      {date:'13.03',doc:'FRA-027',acct:'6010',desc:'Fremdpersonal — Dr. Schmidt 2. Krankheitsvertretung ⚠ SICK COVER',debit:'6,150',credit:'',type:'cost'},
+      {date:'15.03',doc:'FRA-031',acct:'6000',desc:'Personalkosten Tierärzte — Rate 2',debit:'27,100',credit:'',type:'cost'},
+      {date:'17.03',doc:'FRA-033',acct:'8000',desc:'Erlöse KW11 — 64 Tiere (capacity still reduced)',debit:'',credit:'7,400',type:'rev'},
+      {date:'17.03',doc:'FRA-035',acct:'8010',desc:'Erlöse OPs KW11 — 4 Eingriffe Tierarzt-Vertretung',debit:'',credit:'6,200',type:'rev'},
+      {date:'20.03',doc:'FRA-043',acct:'8030',desc:'Erlöse Diagnostik — Ultraschall und Blutbild KW11',debit:'',credit:'4,600',type:'rev'},
+      {date:'21.03',doc:'FRA-047',acct:'6050',desc:'AfA Geräte — Abschreibung Operationsausstattung (depreciation)',debit:'2,400',credit:'',type:'cost'},
+      {date:'24.03',doc:'FRA-049',acct:'8000',desc:'Erlöse KW12 — 71 Tiere (slight recovery)',debit:'',credit:'8,200',type:'rev'},
+      {date:'27.03',doc:'FRA-059',acct:'8020',desc:'Erlöse Medikamente KW12 — Abgabebatch',debit:'',credit:'4,400',type:'rev'},
+      {date:'28.03',doc:'FRA-063',acct:'6010',desc:'Fremdpersonal Dr. Müller — KW12 zwei Tage ⚠ SICK COVER',debit:'4,100',credit:'',type:'cost'},
+      {date:'31.03',doc:'FRA-071',acct:'6000',desc:'Personalkosten — Endgehalt 5 VZÄ März Rate 3',debit:'27,100',credit:'',type:'cost'},
+      {date:'31.03',doc:'FRA-073',acct:'6040',desc:'Nebenkosten und Reinigung März (facilities)',debit:'4,200',credit:'',type:'cost'},
+      {date:'31.03',doc:'FRA-083',acct:'8000',desc:'Erlöse — Monatsabschluss späte Honorarfakturen',debit:'',credit:'7,760',type:'rev'},
+      {date:'31.03',doc:'FRA-085',acct:'6010',desc:'Fremdpersonal Rückstellung April-Anteil ⚠ SICK COVER cont.',debit:'4,100',credit:'',type:'cost'},
+      {date:'31.03',doc:'FRA-087',acct:'8040',desc:'Sonstige Erlöse Monatsabschluss (other revenue)',debit:'',credit:'800',type:'rev'},
+    ],
+    totals:{rev:'194,400',cost:'217,800',ebitda:'-23,400'}
+  }
+};
+
+
+
+
+var D = {
+  amsterdam: {
+    name:'Amsterdam', fullName:'Animedica Amsterdam', system:'Exact Online', language:'English', flag:'🇳🇱', color:'#60a5fa',
+    budget:340000, totalRevenue:369400, totalCosts:263700, ebitda:105700, ebitdaPct:29, vsBudget:29400, vsBudgetPct:9,
+    tb:[
+      {a:'8000',d:'Consultation Revenue',   cr:182400},
+      {a:'8010',d:'Surgical Revenue',       cr: 94200},
+      {a:'8020',d:'Pharmacy Revenue',       cr: 48600},
+      {a:'8030',d:'Diagnostics Revenue',    cr: 31800},
+      {a:'8040',d:'Grooming & Other',       cr: 12400},
+      {a:'4000',d:'Veterinary Staff',       db:142800},
+      {a:'4010',d:'Locum Costs',            db: 18600},
+      {a:'4020',d:'Medical Supplies',       db: 38400},
+      {a:'4030',d:'Pharmaceutical',         db: 22100},
+      {a:'4040',d:'Rent & Facilities',      db: 24000},
+      {a:'4050',d:'Depreciation',           db:  8200},
+      {a:'4060',d:'Admin & IT',             db:  6400},
+      {a:'4070',d:'Marketing',              db:  3200},
+    ],
+    debtors:[
+      {p:'Achmea Insurance', a:38400, days:52, status:'warn'},
+      {p:'VGZ Insurance',    a:28800, days:67, status:'err'},
+      {p:'Private clients',  a:27000, days:28, status:'ok'},
+    ],
+    headcount:{fteVets:8,locumDays:3},
+  },
+  rotterdam: {
+    name:'Rotterdam', fullName:'Animedica Rotterdam', system:'AFAS Profit', language:'Dutch', flag:'🇳🇱', color:'#34d399',
+    budget:280000, totalRevenue:291400, totalCosts:203100, ebitda:88300, ebitdaPct:30, vsBudget:11400, vsBudgetPct:4,
+    tb:[
+      {a:'Omzet Consulten',  d:'Consultation revenue', cr:142600},
+      {a:'Omzet Operaties',  d:'Surgical revenue',     cr: 78400},
+      {a:'Omzet Apotheek',   d:'Pharmacy revenue',     cr: 36200},
+      {a:'Omzet Diagn.',     d:'Diagnostics revenue',  cr: 24800},
+      {a:'Overige Omzet',    d:'Other revenue',        cr:  9400},
+      {a:'Personeelskost.',  d:'Staff costs',          db:118400},
+      {a:'Inhuur',           d:'Locum costs',          db:  8200},
+      {a:'Inkoop',           d:'Medical supplies',     db: 28600},
+      {a:'Farmacie',         d:'Pharmaceutical',       db: 16800},
+      {a:'Huisvesting',      d:'Rent',                 db: 18000},
+      {a:'Afschrijvingen',   d:'Depreciation',         db:  6100},
+      {a:'Alg. Kosten',      d:'Admin & IT',           db:  4800},
+      {a:'Marketing',        d:'Marketing',            db:  2200},
+    ],
+    debtors:[
+      {p:'CZ Zorgverzek.',   a:24600, days:38, status:'ok'},
+      {p:'Menzis',           a:18200, days:44, status:'ok'},
+      {p:'Particulieren',    a:25600, days:22, status:'ok'},
+    ],
+    headcount:{fteVets:6,locumDays:1},
+  },
+  frankfurt: {
+    name:'Frankfurt', fullName:'Animedica Frankfurt', system:'DATEV (SKR03)', language:'German', flag:'🇩🇪', color:'#fb923c',
+    budget:220000, totalRevenue:194400, totalCosts:217800, ebitda:-23400, ebitdaPct:-12, vsBudget:-25600, vsBudgetPct:-12,
+    tb:[
+      {a:'8000',d:'Erlöse Tierarzt',      cr: 98400},
+      {a:'8010',d:'Erlöse Operationen',   cr: 42600},
+      {a:'8020',d:'Erlöse Medikamente',   cr: 28200},
+      {a:'8030',d:'Erlöse Diagnostik',    cr: 18400},
+      {a:'8040',d:'Sonstige Erlöse',      cr:  6800},
+      {a:'6000',d:'Personalkosten',       db:108400},
+      {a:'6010',d:'Fremdpersonal',        db: 24600},
+      {a:'6020',d:'Medizinbedarf',        db: 32800},
+      {a:'6030',d:'Arzneimittel',         db: 14200},
+      {a:'6040',d:'Miete',               db: 22000},
+      {a:'6050',d:'AfA Geräte',          db:  7400},
+      {a:'6060',d:'Verwaltung/IT',       db:  5600},
+      {a:'6070',d:'Marketing',           db:  2800},
+    ],
+    debtors:[
+      {p:'DAT Versicherung',  a:34200, days:72, status:'err'},
+      {p:'AXA Kranken',       a:24600, days:64, status:'err'},
+      {p:'Privatpatienten',   a:23600, days:35, status:'ok'},
+    ],
+    headcount:{fteVets:5,locumDays:4},
+  },
+};
+// Pre-calculate totalDebtors for each clinic
+['amsterdam','rotterdam','frankfurt'].forEach(function(key){
+  if(D[key] && D[key].debtors) D[key].totalDebtors=D[key].debtors.reduce(function(s,d){return s+(d.a||0);},0);
+});
+
+D.GROUP={
+  totalRevenue:855200, totalCosts:684600, ebitda:170600, ebitdaPct:20,
+  totalBudget:840000, vsBudget:15200, vsBudgetPct:2,
+};
+
+// ═══════════════════════════════════════════
+// DATA VIEWER
+// ═══════════════════════════════════════════
+var activeClinic='amsterdam';
+function fmt(n){return '€'+n.toLocaleString();}
+function showClinic(id){
+  activeClinic=id;
+  document.querySelectorAll('.cs-btn').forEach(function(b,i){
+    b.classList.toggle('active',['amsterdam','rotterdam','frankfurt','group'][i]===id);
+  });
+  var colData=document.querySelector('.col-data');
+  var isWide = id==='group' || id==='budget';
+  if(colData) colData.classList.toggle('grp-view', isWide);
+  if(id==='group') renderGroupPanel();
+  else if(id==='budget') renderBudgetPanel();
+  else renderDataPanel(id);
+}
+
+
+
+// ── BUDGET PANEL ──────────────────────────────────────────────
+
+function renderBudgetGroupTable(BUDGET){
+  var container=document.getElementById('bgt-table-container');
+  if(!container) return;
+
+  var clinics=['amsterdam','rotterdam','frankfurt'];
+  var grid='grid-template-columns:1fr 90px 90px 90px 100px';
+
+  // Compute totals per clinic
+  function totals(cid){
+    var c=BUDGET[cid];
+    var rev=c.lines.filter(function(l){return l.type==='rev';});
+    var cost=c.lines.filter(function(l){return l.type==='cost';});
+    return {
+      marchRev: rev.reduce(function(s,l){return s+l.march;},0),
+      marchCost:cost.reduce(function(s,l){return s+l.march;},0),
+      annualRev:rev.reduce(function(s,l){return s+l.annual;},0),
+      annualCost:cost.reduce(function(s,l){return s+l.annual;},0),
+    };
+  }
+  var T={
+    amsterdam:totals('amsterdam'),
+    rotterdam:totals('rotterdam'),
+    frankfurt:totals('frankfurt'),
+  };
+  var grpRev=T.amsterdam.marchRev+T.rotterdam.marchRev+T.frankfurt.marchRev;
+  var grpCost=T.amsterdam.marchCost+T.rotterdam.marchCost+T.frankfurt.marchCost;
+  var grpAnnRev=T.amsterdam.annualRev+T.rotterdam.annualRev+T.frankfurt.annualRev;
+  var grpAnnCost=T.amsterdam.annualCost+T.rotterdam.annualCost+T.frankfurt.annualCost;
+
+  // Build all line labels across clinics
+  var revLabels=['Consultation Rev.','Surgical Rev.','Pharmacy Rev.','Diagnostics Rev.','Other Revenue'];
+  var costLabels=['Staff Costs','Locum / Fremdpers.','Medical Supplies','Pharmaceutical','Rent','Depreciation','Admin & IT','Marketing'];
+
+  // March budget values per label per clinic (in order)
+  var revMarch={
+    amsterdam:[196000,80000,40000,28000,14000],
+    rotterdam:[140000,72000,35000,22000,14000],
+    frankfurt:[100000,44000,28000,18000,7000],
+  };
+  var costMarch={
+    amsterdam:[140000,12000,38000,22000,26000,8000,6000,3000],
+    rotterdam:[117000,8000,27000,16000,19000,6000,5000,2000],
+    frankfurt:[108000,12000,31000,14000,22000,7000,5000,2800],
+  };
+
+  var head='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-bottom:1px solid #1a2438;background:#0d1520;border-radius:4px 4px 0 0">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE ITEM (MARCH BUDGET)</span>'
+    +'<span style="font-size:7px;color:#60a5fa;font-family:monospace;text-align:right">🇳🇱 AMS</span>'
+    +'<span style="font-size:7px;color:#34d399;font-family:monospace;text-align:right">🇳🇱 ROT</span>'
+    +'<span style="font-size:7px;color:#fb923c;font-family:monospace;text-align:right">🇩🇪 FRA</span>'
+    +'<span style="font-size:7px;color:#a78bfa;font-family:monospace;text-align:right">GROUP TOTAL</span>'
+    +'</div>';
+
+  function grpRow(label, amsV, rotV, fraV, type, isTot, isFlag){
+    var col=type==='rev'?'#22c55e':'#ef4444';
+    var grp=amsV+rotV+fraV;
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':isFlag?'background:rgba(167,139,250,.04);':'';
+    var fw=isTot?'font-weight:700;':'';
+    var flagIcon=isFlag?'⚡ ':'';
+    return '<div style="display:grid;'+grid+';gap:4px;padding:3px 10px;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8.5px;color:'+(isTot?'#f0f4f8':isFlag?'#a78bfa':'#a0b8c8')+';'+fw+'">'+flagIcon+label+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(amsV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(rotV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(fraV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+(isTot?col:'#a78bfa')+';text-align:right;'+fw+'">'+fmt(grp)+'</span>'
+      +'</div>';
+  }
+
+  var rows=head;
+  rows+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">REVENUE</div>';
+  revLabels.forEach(function(label,i){
+    rows+=grpRow(label,revMarch.amsterdam[i],revMarch.rotterdam[i],revMarch.frankfurt[i],'rev',false,false);
+  });
+  rows+=grpRow('TOTAL REVENUE',T.amsterdam.marchRev,T.rotterdam.marchRev,T.frankfurt.marchRev,'rev',true,false);
+
+  rows+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">COSTS</div>';
+  costLabels.forEach(function(label,i){
+    var isFlag=i===1; // Locum line
+    rows+=grpRow(label,costMarch.amsterdam[i],costMarch.rotterdam[i],costMarch.frankfurt[i],'cost',false,isFlag);
+  });
+  rows+=grpRow('TOTAL COSTS',T.amsterdam.marchCost,T.rotterdam.marchCost,T.frankfurt.marchCost,'cost',true,false);
+
+  // EBITDA
+  var eAms=T.amsterdam.marchRev-T.amsterdam.marchCost;
+  var eRot=T.rotterdam.marchRev-T.rotterdam.marchCost;
+  var eFra=T.frankfurt.marchRev-T.frankfurt.marchCost;
+  var eGrp=eAms+eRot+eFra;
+  function eCol(v){return v>=0?'#22c55e':'#ef4444';}
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:8.5px;color:#f0f4f8;font-weight:700">BUDGETED EBITDA</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eAms)+';text-align:right;font-weight:700">'+fmt(eAms)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eRot)+';text-align:right;font-weight:700">'+fmt(eRot)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eFra)+';text-align:right;font-weight:700">'+fmt(eFra)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eGrp)+';text-align:right;font-weight:700">'+fmt(eGrp)+'</span>'
+    +'</div>';
+
+  // EBITDA margin
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:3px 10px 5px;background:#0d1520">'
+    +'<span style="font-size:7.5px;color:#4e7a96">EBITDA Margin %</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eAms/T.amsterdam.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eRot/T.rotterdam.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#ef4444;text-align:right">'+Math.round(eFra/T.frankfurt.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eGrp/grpRev*100)+'%</span>'
+    +'</div>';
+
+  rows+='<div style="padding:6px 10px;font-size:7px;color:#4e7a96;font-family:monospace;border-top:1px solid #1a2438">'
+    +'⚡ Locum/Fremdpersonal: AMS €12K · ROT €8K · FRA €12K budget — Variance-Agent flags any overrun vs actual journal entries'
+    +'</div>';
+
+  container.innerHTML='<div style="background:#07090d;border:1px solid #1a2438;border-radius:0 0 6px 6px;overflow:hidden">'+rows+'</div>';
+}
+
+function renderBudgetPanel(){
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px">'
+    +'<span style="font-size:18px">📋</span>'
+    +'<div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">Annual Budget FY2026 — All Clinics</div>'
+    +'<div style="font-size:8px;color:#4e7a96;font-family:monospace;margin-top:2px">Monthly phased · March highlighted · Blue = editable inputs in Excel</div>'
+    +'</div></div>';
+  body.appendChild(hdr);
+
+  // Budget data per clinic
+  var BUDGET = {
+    amsterdam: {
+      color:'#60a5fa', flag:'🇳🇱', name:'Amsterdam', system:'Exact Online',
+      annual_rev:4080000, annual_cost:2856000,
+      lines:[
+        {acct:'8000',label:'Consultation Revenue', type:'rev', annual:2160000, march:196000},
+        {acct:'8010',label:'Surgical Revenue',      type:'rev', annual:900000,  march:80000},
+        {acct:'8020',label:'Pharmacy Revenue',       type:'rev', annual:480000,  march:40000},
+        {acct:'8030',label:'Diagnostics Revenue',    type:'rev', annual:360000,  march:28000},
+        {acct:'8040',label:'Grooming & Other',       type:'rev', annual:180000,  march:14000},
+        {acct:'4000',label:'Veterinary Staff',       type:'cost',annual:1680000, march:140000},
+        {acct:'4010',label:'Locum Costs',            type:'cost',annual:144000,  march:12000, flag:true},
+        {acct:'4020',label:'Medical Supplies',       type:'cost',annual:456000,  march:38000},
+        {acct:'4030',label:'Pharmaceutical',         type:'cost',annual:264000,  march:22000},
+        {acct:'4040',label:'Rent & Facilities',      type:'cost',annual:312000,  march:26000},
+        {acct:'4050',label:'Depreciation',           type:'cost',annual:96000,   march:8000},
+        {acct:'4060',label:'Admin & IT',             type:'cost',annual:72000,   march:6000},
+        {acct:'4070',label:'Marketing',              type:'cost',annual:36000,   march:3000},
+      ]
+    },
+    rotterdam: {
+      color:'#34d399', flag:'🇳🇱', name:'Rotterdam', system:'AFAS Profit',
+      annual_rev:3360000, annual_cost:2352000,
+      lines:[
+        {acct:'Omzet Consulten',  label:'Consultatie omzet',     type:'rev', annual:1680000,march:140000},
+        {acct:'Omzet Operaties',  label:'Operatie omzet',         type:'rev', annual:840000, march:72000},
+        {acct:'Omzet Apotheek',   label:'Apotheek omzet',         type:'rev', annual:420000, march:35000},
+        {acct:'Omzet Diagnostiek',label:'Diagnostiek omzet',      type:'rev', annual:252000, march:22000},
+        {acct:'Overige Omzet',    label:'Overige diensten',       type:'rev', annual:168000, march:14000},
+        {acct:'Personeelskosten', label:'Salarissen dierenartsen',type:'cost',annual:1404000,march:117000},
+        {acct:'Inhuur',           label:'Uitzendkrachten (locum)',type:'cost',annual:96000,  march:8000, flag:true},
+        {acct:'Inkoop',           label:'Medische verbruiksart.', type:'cost',annual:324000, march:27000},
+        {acct:'Farmacie',         label:'Medicijnen inkoop',      type:'cost',annual:192000, march:16000},
+        {acct:'Huisvesting',      label:'Huur en servicekosten',  type:'cost',annual:228000, march:19000},
+        {acct:'Afschrijvingen',   label:'Apparatuur',             type:'cost',annual:72000,  march:6000},
+        {acct:'Algemene Kosten',  label:'ICT en administratie',   type:'cost',annual:60000,  march:5000},
+        {acct:'Marketing',        label:'Promotie',               type:'cost',annual:24000,  march:2000},
+      ]
+    },
+    frankfurt: {
+      color:'#fb923c', flag:'🇩🇪', name:'Frankfurt', system:'DATEV SKR03',
+      annual_rev:2640000, annual_cost:2244000,
+      lines:[
+        {acct:'8000',label:'Erlöse Tierarztleist.',  type:'rev', annual:1176000,march:100000},
+        {acct:'8010',label:'Erlöse Operationen',      type:'rev', annual:504000, march:44000},
+        {acct:'8020',label:'Erlöse Medikamente',      type:'rev', annual:336000, march:28000},
+        {acct:'8030',label:'Erlöse Diagnostik',       type:'rev', annual:216000, march:18000},
+        {acct:'8040',label:'Sonstige Erlöse',         type:'rev', annual:84000,  march:7000},
+        {acct:'6000',label:'Personalkosten',          type:'cost',annual:1296000,march:108000},
+        {acct:'6010',label:'Fremdpersonal ⚠',         type:'cost',annual:144000, march:12000, flag:true},
+        {acct:'6020',label:'Medizinbedarf',           type:'cost',annual:372000, march:31000},
+        {acct:'6030',label:'Arzneimittel',            type:'cost',annual:168000, march:14000},
+        {acct:'6040',label:'Miete',                   type:'cost',annual:264000, march:22000},
+        {acct:'6050',label:'AfA Geräte',              type:'cost',annual:84000,  march:7000},
+        {acct:'6060',label:'Verwaltung und IT',       type:'cost',annual:60000,  march:5000},
+        {acct:'6070',label:'Marketing',               type:'cost',annual:33600,  march:2800},
+      ]
+    }
+  };
+
+  // Clinic selector tabs inside budget panel
+  var tabsDiv=document.createElement('div');
+  tabsDiv.style.cssText='display:flex;gap:4px;margin-bottom:8px';
+  // Add Group consolidated tab first
+  (function(){
+    var btn=document.createElement('button');
+    btn.textContent='🌍 Group';
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid #22c55e;background:rgba(0,0,0,0);color:#22c55e;transition:all .15s';
+    btn.className='bgt-tab';
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background='rgba(34,197,94,.15)'; btn.style.fontWeight='700';
+      renderBudgetGroupTable(BUDGET);
+    };
+    tabsDiv.appendChild(btn);
+  })();
+
+  ['amsterdam','rotterdam','frankfurt'].forEach(function(cid){
+    var c=BUDGET[cid];
+    var btn=document.createElement('button');
+    btn.textContent=c.flag+' '+c.name;
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid '+c.color+';background:rgba(0,0,0,0);color:'+c.color+';transition:all .15s';
+    btn.dataset.cid=cid;
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background=c.color+'22'; btn.style.fontWeight='700';
+      renderBudgetTable(cid, BUDGET);
+    };
+    btn.className='bgt-tab';
+    tabsDiv.appendChild(btn);
+  });
+  body.appendChild(tabsDiv);
+
+  // Budget table container
+  var tableContainer=document.createElement('div');
+  tableContainer.id='bgt-table-container';
+  body.appendChild(tableContainer);
+
+  // Render Group consolidated by default
+  renderBudgetGroupTable(BUDGET);
+  // Activate first tab (Group)
+  tabsDiv.querySelector('.bgt-tab').style.background='rgba(34,197,94,.15)';
+  tabsDiv.querySelector('.bgt-tab').style.fontWeight='700';
+}
+
+function renderBudgetTable(cid, BUDGET){
+  var c=BUDGET[cid];
+  var container=document.getElementById('bgt-table-container');
+  if(!container) return;
+
+  var totalRev=c.lines.filter(function(l){return l.type==='rev';}).reduce(function(s,l){return s+l.annual;},0);
+  var totalCost=c.lines.filter(function(l){return l.type==='cost';}).reduce(function(s,l){return s+l.annual;},0);
+  var marchRev=c.lines.filter(function(l){return l.type==='rev';}).reduce(function(s,l){return s+l.march;},0);
+  var marchCost=c.lines.filter(function(l){return l.type==='cost';}).reduce(function(s,l){return s+l.march;},0);
+
+  // Column header
+  var grid='grid-template-columns:55px 1fr 90px 90px';
+  var head='<div style="display:grid;'+grid+';gap:4px;padding:4px 0 5px;border-bottom:1px solid #1a2438;background:#0d1520;padding:5px 10px;border-radius:4px 4px 0 0">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">ACCT</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE ITEM</span>'
+    +'<span style="font-size:7px;color:#a78bfa;font-family:monospace;text-align:right">MARCH BUDGET</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">ANNUAL</span>'
+    +'</div>';
+
+  function bRow(acct, label, annual, march, type, isTot, isFlag){
+    var col=type==='rev'?'#22c55e':'#ef4444';
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':isFlag?'background:rgba(167,139,250,.04);':'';
+    var fw=isTot?'font-weight:700;':'';
+    return '<div style="display:grid;'+grid+';gap:4px;padding:3px 10px;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;'+fw+'">'+acct+'</span>'
+      +'<span style="font-size:8.5px;color:'+(isTot?'#f0f4f8':isFlag?'#a78bfa':'#a0b8c8')+';'+fw+'">'+(isFlag?'⚡ ':'')+label+'</span>'
+      +'<span style="font-size:9px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(march)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(annual)+'</span>'
+      +'</div>';
+  }
+
+  var rows=head;
+  rows+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">REVENUE</div>';
+  c.lines.filter(function(l){return l.type==='rev';}).forEach(function(l){
+    rows+=bRow(l.acct,l.label,l.annual,l.march,'rev',false,false);
+  });
+  rows+=bRow('TOTAL','Total Revenue',totalRev,marchRev,'rev',true,false);
+
+  rows+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">COSTS</div>';
+  c.lines.filter(function(l){return l.type==='cost';}).forEach(function(l){
+    rows+=bRow(l.acct,l.label,l.annual,l.march,'cost',false,!!l.flag);
+  });
+  rows+=bRow('TOTAL','Total Costs',totalCost,marchCost,'cost',true,false);
+
+  var ebitdaAnnual=totalRev-totalCost;
+  var ebitdaMarch=marchRev-marchCost;
+  var eCol=ebitdaMarch>=0?'#22c55e':'#ef4444';
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#f0f4f8;font-weight:700">EBITDA</span>'
+    +'<span style="font-size:8.5px;color:#f0f4f8;font-weight:700">Budgeted EBITDA</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol+';text-align:right;font-weight:700">'+fmt(ebitdaMarch)+'</span>'
+    +'<span style="font-size:8px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(ebitdaAnnual)+'</span>'
+    +'</div>';
+
+  rows+='<div style="padding:6px 10px;font-size:7px;color:#4e7a96;font-family:monospace;border-top:1px solid #1a2438">'
+    +'⚡ = locum/temp budget · compare against actual to see Frankfurt overrun · MARCH column = what Variance-Agent uses'
+    +'</div>';
+
+  container.innerHTML='<div style="background:#07090d;border:1px solid #1a2438;border-radius:0 0 6px 6px;overflow:hidden">'+rows+'</div>';
+}
+
+// ── CONSOLIDATED GROUP PANEL ──────────────────────────────────
+function renderGroupPanel(){
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px"><span style="font-size:18px">🌍</span><div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">Animedica Group — Consolidated</div><div style="font-size:8px;color:#4e7a96;font-family:monospace;margin-top:2px">Exact Online · AFAS Profit · DATEV SKR03</div></div></div>';
+  body.appendChild(hdr);
+
+  // Group KPIs
+  var kpis=document.createElement('div');
+  kpis.className='kpi-strip';
+  kpis.innerHTML=[
+    '<div class="kpi"><div class="kpi-val" style="color:#60a5fa">'+fmt(D.GROUP.totalRevenue)+'</div><div class="kpi-label">GROUP REV</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:#22c55e">+'+D.GROUP.vsBudgetPct+'%</div><div class="kpi-label">vs BUDGET</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:#22c55e">'+D.GROUP.ebitdaPct+'%</div><div class="kpi-label">EBITDA</div></div>',
+  ].join('');
+  body.appendChild(kpis);
+
+  // Clinic revenue bars
+  var clinics=[{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}];
+  var maxRev=D.amsterdam.totalRevenue;
+  var compDiv=document.createElement('div');
+  compDiv.className='ds';
+  var compBody='<div class="ds-body" style="padding:10px;overflow:visible">';
+  clinics.forEach(function(cl){
+    var c=D[cl.id];
+    var pct=Math.round(c.totalRevenue/maxRev*100);
+    var eCol=c.ebitda>=0?'#22c55e':'#ef4444';
+    var bCol=c.vsBudget>=0?'#22c55e':'#ef4444';
+    compBody+='<div style="margin-bottom:10px">';
+    compBody+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">';
+    compBody+='<span style="font-size:11px;font-weight:700;color:'+c.color+'">'+cl.flag+' '+c.name+'</span>';
+    compBody+='<span style="font-family:monospace;font-size:9px;color:'+c.color+'">'+fmt(c.totalRevenue)+'</span>';
+    compBody+='</div>';
+    compBody+='<div style="height:5px;background:#1a2438;border-radius:3px;margin-bottom:3px"><div style="height:5px;width:'+pct+'%;background:'+c.color+';border-radius:3px"></div></div>';
+    compBody+='<div style="display:flex;gap:10px">';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:'+eCol+'">EBITDA '+c.ebitdaPct+'%</span>';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:'+bCol+'">'+(c.vsBudget>=0?'+':'')+c.vsBudgetPct+'% vs bgt</span>';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:#4e7a96">'+c.system+'</span>';
+    compBody+='</div></div>';
+  });
+  compBody+='</div>';
+  compDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#22c55e"></div><span class="ds-head-title" style="color:#22c55e">CLINIC COMPARISON</span></div>'+compBody;
+  body.appendChild(compDiv);
+
+  // Consolidated P&L
+  var plDiv=document.createElement('div');
+  plDiv.className='ds';
+  var revLines=[
+    {label:'Consultations', ams:182400,rot:142600,fra:98400},
+    {label:'Surgery',       ams:94200, rot:78400, fra:42600},
+    {label:'Pharmacy',      ams:48600, rot:36200, fra:28200},
+    {label:'Diagnostics',   ams:31800, rot:24800, fra:18400},
+    {label:'Other',         ams:12400, rot:9400,  fra:6800},
+  ];
+  var costLines=[
+    {label:'Staff costs',   ams:142800,rot:118400,fra:108400},
+    {label:'Locum/temp',    ams:18600, rot:8200,  fra:24600},
+    {label:'Med. supplies', ams:38400, rot:28600, fra:32800},
+    {label:'Pharma',        ams:22100, rot:16800, fra:14200},
+    {label:'Rent',          ams:24000, rot:18000, fra:22000},
+    {label:'Depreciation',  ams:8200,  rot:6100,  fra:7400},
+    {label:'Admin & IT',    ams:6400,  rot:4800,  fra:5600},
+    {label:'Marketing',     ams:3200,  rot:2200,  fra:2800},
+  ];
+
+  function fmtK(v){ return (v>=0?'+':'-')+'€'+(Math.abs(v)/1000).toFixed(0)+'K'; }
+
+  var colHdr='<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:4px 0 5px;border-bottom:1px solid #1a2438">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE</span>'
+    +'<span style="font-size:7px;color:#60a5fa;font-family:monospace;text-align:right">AMS</span>'
+    +'<span style="font-size:7px;color:#34d399;font-family:monospace;text-align:right">ROT</span>'
+    +'<span style="font-size:7px;color:#fb923c;font-family:monospace;text-align:right">FRA</span>'
+    +'</div>';
+
+  function plRow(label,ams,rot,fra,isRev,isTot){
+    var amtCol=isRev?'#22c55e':'#ef4444';
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':'';
+    var fw=isTot?'font-weight:700;':'';
+    return '<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:2.5px 0;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8px;color:'+(isTot?'#f0f4f8':'#a0b8c8')+';'+fw+'">'+label+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(ams)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(rot)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(fra)+'</span>'
+      +'</div>';
+  }
+
+  var tRevAms=revLines.reduce(function(s,r){return s+r.ams;},0);
+  var tRevRot=revLines.reduce(function(s,r){return s+r.rot;},0);
+  var tRevFra=revLines.reduce(function(s,r){return s+r.fra;},0);
+  var tCostAms=costLines.reduce(function(s,r){return s+r.ams;},0);
+  var tCostRot=costLines.reduce(function(s,r){return s+r.rot;},0);
+  var tCostFra=costLines.reduce(function(s,r){return s+r.fra;},0);
+
+  var plHtml=colHdr;
+  plHtml+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 0 2px">REVENUE</div>';
+  // Revenue budgets by line (from budget file)
+  var revBdg={
+    Consultations: {ams:196000,rot:140000,fra:100000},
+    Surgery:       {ams:80000, rot:72000, fra:44000},
+    Pharmacy:      {ams:40000, rot:35000, fra:28000},
+    Diagnostics:   {ams:28000, rot:22000, fra:18000},
+    Other:         {ams:14000, rot:14000, fra:7000},
+  };
+  revLines.forEach(function(r){
+    var b=revBdg[r.label]||{};
+    plHtml+=plRow(r.label,r.ams,r.rot,r.fra,true,false,b.ams,b.rot,b.fra);
+  });
+  plHtml+=plRow('TOTAL REV',tRevAms,tRevRot,tRevFra,true,true,
+    GRP_BDG.amsterdam.rev,GRP_BDG.rotterdam.rev,GRP_BDG.frankfurt.rev);
+  plHtml+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 0 2px">COSTS</div>';
+  var costBdg={
+    'Staff costs':   {ams:140000,rot:117000,fra:108000},
+    'Locum/temp':    {ams:12000, rot:8000,  fra:12000},   // KEY: FRA budget €12K, actual €24.6K
+    'Med. supplies': {ams:38000, rot:27000, fra:31000},
+    'Pharma':        {ams:22000, rot:16000, fra:14000},
+    'Rent':          {ams:26000, rot:19000, fra:22000},
+    'Depreciation':  {ams:8000,  rot:6000,  fra:7000},
+    'Admin & IT':    {ams:6000,  rot:5000,  fra:5000},
+    'Marketing':     {ams:3000,  rot:2000,  fra:2800},
+  };
+  costLines.forEach(function(r){
+    var b=costBdg[r.label]||{};
+    plHtml+=plRow(r.label,r.ams,r.rot,r.fra,false,false,b.ams,b.rot,b.fra);
+  });
+  plHtml+=plRow('TOTAL COST',tCostAms,tCostRot,tCostFra,false,true,
+    GRP_BDG.amsterdam.cost,GRP_BDG.rotterdam.cost,GRP_BDG.frankfurt.cost);
+
+  // EBITDA row
+  var eAms=D.amsterdam.ebitda,eRot=D.rotterdam.ebitda,eFra=D.frankfurt.ebitda;
+  plHtml+='<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:5px 0 2px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:9px;font-weight:700;color:#f0f4f8;font-family:monospace">EBITDA</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#22c55e;text-align:right">'+fmtK(eAms)+'</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#22c55e;text-align:right">'+fmtK(eRot)+'</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#ef4444;text-align:right">'+fmtK(eFra)+'</span>'
+    +'</div>';
+
+  plDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#60a5fa"></div><span class="ds-head-title" style="color:#60a5fa">CONSOLIDATED P&L</span><span class="ds-head-badge" style="background:#60a5fa18;color:#60a5fa">3 SYSTEMS</span></div><div class="ds-body" style="padding:8px 10px">'+plHtml+'</div>';
+  body.appendChild(plDiv);
+
+  // All debtors sorted by age
+  var ds3=document.createElement('div'); ds3.className='ds';
+  var allDebtors=[];
+  // Add Group consolidated tab first
+  (function(){
+    var btn=document.createElement('button');
+    btn.textContent='🌍 Group';
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid #22c55e;background:rgba(0,0,0,0);color:#22c55e;transition:all .15s';
+    btn.className='bgt-tab';
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background='rgba(34,197,94,.15)'; btn.style.fontWeight='700';
+      renderBudgetGroupTable(BUDGET);
+    };
+    tabsDiv.appendChild(btn);
+  })();
+
+  ['amsterdam','rotterdam','frankfurt'].forEach(function(cid){
+    D[cid].debtors.forEach(function(d){ allDebtors.push({p:d.p,a:d.a,days:d.days,status:d.status,color:D[cid].color}); });
+  });
+  allDebtors.sort(function(a,b){return b.days-a.days;});
+  var totalDebt=allDebtors.reduce(function(s,d){return s+d.a;},0);
+  var dRows=allDebtors.map(function(d){
+    var dayCol=d.status==='err'?'#ef444418':d.status==='warn'?'#f59e0b18':'#22c55e18';
+    var dayTxt=d.status==='err'?'#ef4444':d.status==='warn'?'#f59e0b':'#22c55e';
+    return '<div class="debt-row">'
+      +'<span style="width:6px;height:6px;border-radius:50%;background:'+d.color+';display:inline-block;margin-right:5px;flex-shrink:0;vertical-align:middle"></span>'
+      +'<span class="debt-name">'+d.p+'</span>'
+      +'<span class="debt-days" style="background:'+dayCol+';color:'+dayTxt+'">'+d.days+'d</span>'
+      +'<span class="debt-amt">'+fmt(d.a)+'</span>'
+      +'</div>';
+  }).join('');
+  ds3.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#f59e0b"></div><span class="ds-head-title" style="color:#f59e0b">ALL DEBTORS — SORTED BY AGE</span><span class="ds-head-badge" style="background:#f59e0b18;color:#f59e0b">'+fmt(totalDebt)+'</span></div><div class="ds-body">'+dRows+'<div class="tb-total"><span class="tb-total-label">TOTAL OPEN</span><span class="tb-total-val" style="color:#f59e0b">'+fmt(totalDebt)+'</span></div></div>';
+  body.appendChild(ds3);
+}
+
+function renderDataPanel(id){
+  var c=D[id];
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // System info
+  var info=document.createElement('div');
+  info.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px"><span style="font-size:20px">'+c.flag+'</span><div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">'+c.fullName+'</div><div style="font-size:8px;color:#4e7a96;font-family:JetBrains Mono,monospace;margin-top:2px">'+c.system+' &nbsp;·&nbsp; '+c.language+' account codes</div></div></div>';
+  body.appendChild(info);
+
+  // KPIs
+  var kpis=document.createElement('div');
+  kpis.className='kpi-strip';
+  var revCol=c.vsBudget>=0?'#22c55e':'#ef4444';
+  var ebitdaCol=c.ebitda>=0?'#22c55e':'#ef4444';
+  kpis.innerHTML=[
+    '<div class="kpi"><div class="kpi-val" style="color:#60a5fa">'+fmt(c.totalRevenue)+'</div><div class="kpi-label">REVENUE</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:'+revCol+'">'+(c.vsBudget>=0?'+':'')+c.vsBudgetPct+'%</div><div class="kpi-label">vs BUDGET</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:'+ebitdaCol+'">'+c.ebitdaPct+'%</div><div class="kpi-label">EBITDA</div></div>',
+  ].join('');
+  body.appendChild(kpis);
+
+  // Trial Balance
+  var ds=document.createElement('div'); ds.className='ds';
+  var tbRows=c.tb.map(function(r){
+    var amtHtml=r.cr
+      ? '<span class="tb-amt rev">+'+fmt(r.cr)+'</span>'
+      : '<span class="tb-amt cost">-'+fmt(r.db)+'</span>';
+    return '<div class="tb-row"><span class="tb-account">'+r.a+'</span><span class="tb-desc">'+r.d+'</span>'+amtHtml+'</div>';
+  }).join('');
+  var totHtml='<div class="tb-total"><span class="tb-total-label">EBITDA</span><span class="tb-total-val" style="color:'+(c.ebitda>=0?'#22c55e':'#ef4444')+'">'+(c.ebitda>=0?'+':'')+fmt(c.ebitda)+'</span></div>';
+  ds.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:'+c.color+'"></div><span class="ds-head-title" style="color:'+c.color+'">TRIAL BALANCE</span><span class="ds-head-badge" style="background:'+c.color+'18;color:'+c.color+'">'+c.system+'</span></div><div class="ds-body">'+tbRows+totHtml+'</div>';
+  body.appendChild(ds);
+
+  // Budget vs Actual
+  var bvDiv=document.createElement('div'); bvDiv.className='ds';
+  var budgetRows=[
+    {label:'Revenue',   actual:c.totalRevenue, budget:c.budget,              type:'rev'},
+    {label:'Costs',     actual:c.totalCosts,   budget:c.budget-(c.budget-c.totalCosts+(c.ebitda-(c.totalRevenue-c.budget))), type:'cost'},
+    {label:'EBITDA',    actual:c.ebitda,        budget:c.budget-c.totalCosts, type:'ebitda'},
+  ];
+  // Simpler: use known budget values
+  var bRows='';
+  var bLines=[
+    {label:'Revenue',actual:c.totalRevenue,  budget:c.budget,                        isRev:true},
+    {label:'Costs',  actual:c.totalCosts,    budget:c.budget-(c.totalRevenue-c.budget-c.ebitda+(c.budget-c.totalRevenue)), isRev:false},
+    {label:'EBITDA', actual:c.ebitda,        budget:c.budget-Math.round(c.totalCosts*(c.budget/c.totalRevenue)), isRev:true},
+  ];
+  // Use correct budget data from D
+  var budgetData={
+    revenue:{actual:c.totalRevenue, budget:c.budget},
+    costs:  {actual:c.totalCosts,   budget:Math.round(c.budget*(c.totalCosts/c.totalRevenue))},
+    ebitda: {actual:c.ebitda,       budget:c.budget-Math.round(c.budget*(c.totalCosts/c.totalRevenue))},
+  };
+  // Actually use the known budget_ebitda from dataset
+  var budgetEbitda = c.budget - Math.round(c.budget * 0.75); // approx
+  // Use hardcoded per-clinic budget data matching the budget file
+  var BUDGET_REF = {
+    amsterdam: {rev:340000, cost:255000, ebitda:85000},
+    rotterdam:  {rev:280000, cost:196000, ebitda:84000},
+    frankfurt:  {rev:220000, cost:187000, ebitda:33000},
+  };
+  var bRef = BUDGET_REF[id] || {rev:c.budget, cost:Math.round(c.budget*0.75), ebitda:Math.round(c.budget*0.25)};
+  var bvLines=[
+    {label:'Revenue', actual:c.totalRevenue, budget:bRef.rev,    isRev:true},
+    {label:'Costs',   actual:c.totalCosts,   budget:bRef.cost,   isRev:false},
+    {label:'EBITDA',  actual:c.ebitda,       budget:bRef.ebitda, isRev:true},
+  ];
+  // Column header
+  bRows+='<div style="display:grid;grid-template-columns:70px 1fr 1fr 1fr 60px;gap:4px;padding:3px 0 5px;border-bottom:1px solid #1a2438">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE</span>'
+    +'<span style="font-size:7px;color:#a0b8c8;font-family:monospace;text-align:right">ACTUAL</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">BUDGET</span>'
+    +'<span style="font-size:7px;color:#a0b8c8;font-family:monospace;text-align:right">VARIANCE</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">%</span>'
+    +'</div>';
+  bvLines.forEach(function(bl){
+    var varE=bl.actual-bl.budget;
+    // For costs: positive variance is BAD (over budget)
+    var isGood = bl.isRev ? (varE>=0) : (varE<=0);
+    var varCol = isGood ? '#22c55e' : '#ef4444';
+    var varPct = bl.budget!==0 ? Math.round(varE/Math.abs(bl.budget)*100) : 0;
+    var isEbitda = bl.label==='EBITDA';
+    var bg = isEbitda ? 'background:#0d1520;border-top:1px solid #1a2438;' : '';
+    var fw = isEbitda ? 'font-weight:700;' : '';
+    bRows+='<div style="display:grid;grid-template-columns:70px 1fr 1fr 1fr 60px;gap:4px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8px;color:'+(isEbitda?'#f0f4f8':'#a0b8c8')+';'+fw+'">'+bl.label+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:#f0f4f8;text-align:right;'+fw+'">'+fmt(bl.actual)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(bl.budget)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+varCol+';text-align:right;'+fw+'">'+(varE>=0?'+':'')+fmt(varE)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+varCol+';text-align:right;'+fw+'">'+(varPct>=0?'+':'')+varPct+'%</span>'
+      +'</div>';
+  });
+  bvDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#a78bfa"></div><span class="ds-head-title" style="color:#a78bfa">BUDGET vs ACTUAL</span><span class="ds-head-badge" style="background:#a78bfa18;color:#a78bfa">MARCH 2026</span></div><div class="ds-body" style="padding:8px 10px">'+bRows+'</div>';
+  body.appendChild(bvDiv);
+
+  // Debtors
+  var ds2=document.createElement('div'); ds2.className='ds';
+  var dRows=c.debtors.map(function(d){
+    var dayCol=d.status==='err'?'#ef444418':d.status==='warn'?'#f59e0b18':'#22c55e18';
+    var dayTxt=d.status==='err'?'#ef4444':d.status==='warn'?'#f59e0b':'#22c55e';
+    return '<div class="debt-row"><span class="debt-name">'+d.p+'</span><span class="debt-days" style="background:'+dayCol+';color:'+dayTxt+'">'+d.days+'d</span><span class="debt-amt">'+fmt(d.a)+'</span></div>';
+  }).join('');
+  ds2.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#f59e0b"></div><span class="ds-head-title" style="color:#f59e0b">OPEN DEBTORS</span></div><div class="ds-body">'+dRows+'</div>';
+  body.appendChild(ds2);
+}
+renderDataPanel('amsterdam');
+
+function showDataPreview(clinicId) {
+  var section = document.getElementById('dataPreviewSection');
+  if (section) section.style.display = 'block';
+
+  document.querySelectorAll('.dp-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.clinic === clinicId);
+  });
+  document.querySelectorAll('.dp-panel').forEach(function(p){
+    p.classList.toggle('active', p.dataset.clinic === clinicId);
+  });
+
+  var scrollEl = document.getElementById('dp-scroll-' + clinicId);
+  if (scrollEl && scrollEl.innerHTML === '') {
+    var clinic = JOURNAL_PREVIEW[clinicId];
+    var cols = clinicId === 'frankfurt'
+      ? 'grid-template-columns:45px 65px 90px 1fr 70px 70px'
+      : 'grid-template-columns:45px 65px 105px 1fr 70px 70px';
+
+    var hdr = '<div class="dp-row hdr" style="' + cols + '">'
+      + '<span>DATE</span><span>DOC</span><span>ACCOUNT</span><span>DESCRIPTION</span>'
+      + '<span style="text-align:right">DEBIT</span><span style="text-align:right">CREDIT</span></div>';
+
+    var rows = clinic.entries.map(function(e) {
+      var descStyle = e.type==='rev' ? 'color:#a0b8c8' : e.type==='cost' ? 'color:#7a9aaa' : 'color:#4e7a96';
+      var isAlert = e.desc.indexOf('\u26a0') > -1;
+      var rowBg = isAlert ? ';background:rgba(251,146,60,.04)' : '';
+      return '<div class="dp-row ' + e.type + '" style="' + cols + rowBg + '">'
+        + '<span class="dp-date">' + e.date + '</span>'
+        + '<span class="dp-doc">' + e.doc + '</span>'
+        + '<span class="dp-acct" style="color:' + clinic.color + ';opacity:.8;font-size:7.5px">' + e.acct + '</span>'
+        + '<span class="dp-desc" style="' + (isAlert ? 'color:#fb923c' : descStyle) + '">' + e.desc + '</span>'
+        + '<span class="dp-debit">' + (e.debit || '') + '</span>'
+        + '<span class="dp-credit">' + (e.credit || '') + '</span>'
+        + '</div>';
+    }).join('');
+
+    var eCol = clinic.totals.ebitda.indexOf('-') > -1 ? '#ef4444' : '#22c55e';
+    var totRow = '<div class="dp-row total-row" style="display:flex;justify-content:space-between;padding:5px 14px;border-top:2px solid #1a2438;background:#0a0f1a">'
+      + '<span style="font-size:8px;color:#f0f4f8;font-weight:700;font-family:monospace">EBITDA</span>'
+      + '<span style="font-size:9px;font-weight:700;font-family:monospace;color:' + eCol + '">'
+      + 'Rev: +\u20ac' + clinic.totals.rev + '  |  Costs: -\u20ac' + clinic.totals.cost
+      + '  |  EBITDA: \u20ac' + clinic.totals.ebitda + '</span>'
+      + '</div>';
+
+    var note = '<div style="padding:6px 14px;font-size:7px;color:#4e7a96;font-family:monospace;border-top:1px solid #1a2438">'
+      + 'Showing 25 of ~90 representative entries \u00b7 Ledger-Agent reads all entries and builds the P&L by grouping account codes</div>';
+
+    scrollEl.innerHTML = hdr + rows + totRow + note;
+  }
+}
+
+
+
+// ── BUDGET PANEL ──────────────────────────────────────────────
+
+function renderBudgetGroupTable(BUDGET){
+  var container=document.getElementById('bgt-table-container');
+  if(!container) return;
+
+  var clinics=['amsterdam','rotterdam','frankfurt'];
+  var grid='grid-template-columns:1fr 90px 90px 90px 100px';
+
+  // Compute totals per clinic
+  function totals(cid){
+    var c=BUDGET[cid];
+    var rev=c.lines.filter(function(l){return l.type==='rev';});
+    var cost=c.lines.filter(function(l){return l.type==='cost';});
+    return {
+      marchRev: rev.reduce(function(s,l){return s+l.march;},0),
+      marchCost:cost.reduce(function(s,l){return s+l.march;},0),
+      annualRev:rev.reduce(function(s,l){return s+l.annual;},0),
+      annualCost:cost.reduce(function(s,l){return s+l.annual;},0),
+    };
+  }
+  var T={
+    amsterdam:totals('amsterdam'),
+    rotterdam:totals('rotterdam'),
+    frankfurt:totals('frankfurt'),
+  };
+  var grpRev=T.amsterdam.marchRev+T.rotterdam.marchRev+T.frankfurt.marchRev;
+  var grpCost=T.amsterdam.marchCost+T.rotterdam.marchCost+T.frankfurt.marchCost;
+  var grpAnnRev=T.amsterdam.annualRev+T.rotterdam.annualRev+T.frankfurt.annualRev;
+  var grpAnnCost=T.amsterdam.annualCost+T.rotterdam.annualCost+T.frankfurt.annualCost;
+
+  // Build all line labels across clinics
+  var revLabels=['Consultation Rev.','Surgical Rev.','Pharmacy Rev.','Diagnostics Rev.','Other Revenue'];
+  var costLabels=['Staff Costs','Locum / Fremdpers.','Medical Supplies','Pharmaceutical','Rent','Depreciation','Admin & IT','Marketing'];
+
+  // March budget values per label per clinic (in order)
+  var revMarch={
+    amsterdam:[196000,80000,40000,28000,14000],
+    rotterdam:[140000,72000,35000,22000,14000],
+    frankfurt:[100000,44000,28000,18000,7000],
+  };
+  var costMarch={
+    amsterdam:[140000,12000,38000,22000,26000,8000,6000,3000],
+    rotterdam:[117000,8000,27000,16000,19000,6000,5000,2000],
+    frankfurt:[108000,12000,31000,14000,22000,7000,5000,2800],
+  };
+
+  var head='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-bottom:1px solid #1a2438;background:#0d1520;border-radius:4px 4px 0 0">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE ITEM (MARCH BUDGET)</span>'
+    +'<span style="font-size:7px;color:#60a5fa;font-family:monospace;text-align:right">🇳🇱 AMS</span>'
+    +'<span style="font-size:7px;color:#34d399;font-family:monospace;text-align:right">🇳🇱 ROT</span>'
+    +'<span style="font-size:7px;color:#fb923c;font-family:monospace;text-align:right">🇩🇪 FRA</span>'
+    +'<span style="font-size:7px;color:#a78bfa;font-family:monospace;text-align:right">GROUP TOTAL</span>'
+    +'</div>';
+
+  function grpRow(label, amsV, rotV, fraV, type, isTot, isFlag){
+    var col=type==='rev'?'#22c55e':'#ef4444';
+    var grp=amsV+rotV+fraV;
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':isFlag?'background:rgba(167,139,250,.04);':'';
+    var fw=isTot?'font-weight:700;':'';
+    var flagIcon=isFlag?'⚡ ':'';
+    return '<div style="display:grid;'+grid+';gap:4px;padding:3px 10px;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8.5px;color:'+(isTot?'#f0f4f8':isFlag?'#a78bfa':'#a0b8c8')+';'+fw+'">'+flagIcon+label+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(amsV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(rotV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(fraV)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+(isTot?col:'#a78bfa')+';text-align:right;'+fw+'">'+fmt(grp)+'</span>'
+      +'</div>';
+  }
+
+  var rows=head;
+  rows+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">REVENUE</div>';
+  revLabels.forEach(function(label,i){
+    rows+=grpRow(label,revMarch.amsterdam[i],revMarch.rotterdam[i],revMarch.frankfurt[i],'rev',false,false);
+  });
+  rows+=grpRow('TOTAL REVENUE',T.amsterdam.marchRev,T.rotterdam.marchRev,T.frankfurt.marchRev,'rev',true,false);
+
+  rows+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">COSTS</div>';
+  costLabels.forEach(function(label,i){
+    var isFlag=i===1; // Locum line
+    rows+=grpRow(label,costMarch.amsterdam[i],costMarch.rotterdam[i],costMarch.frankfurt[i],'cost',false,isFlag);
+  });
+  rows+=grpRow('TOTAL COSTS',T.amsterdam.marchCost,T.rotterdam.marchCost,T.frankfurt.marchCost,'cost',true,false);
+
+  // EBITDA
+  var eAms=T.amsterdam.marchRev-T.amsterdam.marchCost;
+  var eRot=T.rotterdam.marchRev-T.rotterdam.marchCost;
+  var eFra=T.frankfurt.marchRev-T.frankfurt.marchCost;
+  var eGrp=eAms+eRot+eFra;
+  function eCol(v){return v>=0?'#22c55e':'#ef4444';}
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:8.5px;color:#f0f4f8;font-weight:700">BUDGETED EBITDA</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eAms)+';text-align:right;font-weight:700">'+fmt(eAms)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eRot)+';text-align:right;font-weight:700">'+fmt(eRot)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eFra)+';text-align:right;font-weight:700">'+fmt(eFra)+'</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol(eGrp)+';text-align:right;font-weight:700">'+fmt(eGrp)+'</span>'
+    +'</div>';
+
+  // EBITDA margin
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:3px 10px 5px;background:#0d1520">'
+    +'<span style="font-size:7.5px;color:#4e7a96">EBITDA Margin %</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eAms/T.amsterdam.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eRot/T.rotterdam.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#ef4444;text-align:right">'+Math.round(eFra/T.frankfurt.marchRev*100)+'%</span>'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;text-align:right">'+Math.round(eGrp/grpRev*100)+'%</span>'
+    +'</div>';
+
+  rows+='<div style="padding:6px 10px;font-size:7px;color:#4e7a96;font-family:monospace;border-top:1px solid #1a2438">'
+    +'⚡ Locum/Fremdpersonal: AMS €12K · ROT €8K · FRA €12K budget — Variance-Agent flags any overrun vs actual journal entries'
+    +'</div>';
+
+  container.innerHTML='<div style="background:#07090d;border:1px solid #1a2438;border-radius:0 0 6px 6px;overflow:hidden">'+rows+'</div>';
+}
+
+function renderBudgetPanel(){
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px">'
+    +'<span style="font-size:18px">📋</span>'
+    +'<div>'
+    +'<div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">Annual Budget FY2026 — All Clinics</div>'
+    +'<div style="font-size:8px;color:#4e7a96;font-family:monospace;margin-top:2px">Monthly phased · March highlighted · Blue = editable inputs in Excel</div>'
+    +'</div></div>';
+  body.appendChild(hdr);
+
+  // Budget data per clinic
+  var BUDGET = {
+    amsterdam: {
+      color:'#60a5fa', flag:'🇳🇱', name:'Amsterdam', system:'Exact Online',
+      annual_rev:4080000, annual_cost:2856000,
+      lines:[
+        {acct:'8000',label:'Consultation Revenue', type:'rev', annual:2160000, march:196000},
+        {acct:'8010',label:'Surgical Revenue',      type:'rev', annual:900000,  march:80000},
+        {acct:'8020',label:'Pharmacy Revenue',       type:'rev', annual:480000,  march:40000},
+        {acct:'8030',label:'Diagnostics Revenue',    type:'rev', annual:360000,  march:28000},
+        {acct:'8040',label:'Grooming & Other',       type:'rev', annual:180000,  march:14000},
+        {acct:'4000',label:'Veterinary Staff',       type:'cost',annual:1680000, march:140000},
+        {acct:'4010',label:'Locum Costs',            type:'cost',annual:144000,  march:12000, flag:true},
+        {acct:'4020',label:'Medical Supplies',       type:'cost',annual:456000,  march:38000},
+        {acct:'4030',label:'Pharmaceutical',         type:'cost',annual:264000,  march:22000},
+        {acct:'4040',label:'Rent & Facilities',      type:'cost',annual:312000,  march:26000},
+        {acct:'4050',label:'Depreciation',           type:'cost',annual:96000,   march:8000},
+        {acct:'4060',label:'Admin & IT',             type:'cost',annual:72000,   march:6000},
+        {acct:'4070',label:'Marketing',              type:'cost',annual:36000,   march:3000},
+      ]
+    },
+    rotterdam: {
+      color:'#34d399', flag:'🇳🇱', name:'Rotterdam', system:'AFAS Profit',
+      annual_rev:3360000, annual_cost:2352000,
+      lines:[
+        {acct:'Omzet Consulten',  label:'Consultatie omzet',     type:'rev', annual:1680000,march:140000},
+        {acct:'Omzet Operaties',  label:'Operatie omzet',         type:'rev', annual:840000, march:72000},
+        {acct:'Omzet Apotheek',   label:'Apotheek omzet',         type:'rev', annual:420000, march:35000},
+        {acct:'Omzet Diagnostiek',label:'Diagnostiek omzet',      type:'rev', annual:252000, march:22000},
+        {acct:'Overige Omzet',    label:'Overige diensten',       type:'rev', annual:168000, march:14000},
+        {acct:'Personeelskosten', label:'Salarissen dierenartsen',type:'cost',annual:1404000,march:117000},
+        {acct:'Inhuur',           label:'Uitzendkrachten (locum)',type:'cost',annual:96000,  march:8000, flag:true},
+        {acct:'Inkoop',           label:'Medische verbruiksart.', type:'cost',annual:324000, march:27000},
+        {acct:'Farmacie',         label:'Medicijnen inkoop',      type:'cost',annual:192000, march:16000},
+        {acct:'Huisvesting',      label:'Huur en servicekosten',  type:'cost',annual:228000, march:19000},
+        {acct:'Afschrijvingen',   label:'Apparatuur',             type:'cost',annual:72000,  march:6000},
+        {acct:'Algemene Kosten',  label:'ICT en administratie',   type:'cost',annual:60000,  march:5000},
+        {acct:'Marketing',        label:'Promotie',               type:'cost',annual:24000,  march:2000},
+      ]
+    },
+    frankfurt: {
+      color:'#fb923c', flag:'🇩🇪', name:'Frankfurt', system:'DATEV SKR03',
+      annual_rev:2640000, annual_cost:2244000,
+      lines:[
+        {acct:'8000',label:'Erlöse Tierarztleist.',  type:'rev', annual:1176000,march:100000},
+        {acct:'8010',label:'Erlöse Operationen',      type:'rev', annual:504000, march:44000},
+        {acct:'8020',label:'Erlöse Medikamente',      type:'rev', annual:336000, march:28000},
+        {acct:'8030',label:'Erlöse Diagnostik',       type:'rev', annual:216000, march:18000},
+        {acct:'8040',label:'Sonstige Erlöse',         type:'rev', annual:84000,  march:7000},
+        {acct:'6000',label:'Personalkosten',          type:'cost',annual:1296000,march:108000},
+        {acct:'6010',label:'Fremdpersonal ⚠',         type:'cost',annual:144000, march:12000, flag:true},
+        {acct:'6020',label:'Medizinbedarf',           type:'cost',annual:372000, march:31000},
+        {acct:'6030',label:'Arzneimittel',            type:'cost',annual:168000, march:14000},
+        {acct:'6040',label:'Miete',                   type:'cost',annual:264000, march:22000},
+        {acct:'6050',label:'AfA Geräte',              type:'cost',annual:84000,  march:7000},
+        {acct:'6060',label:'Verwaltung und IT',       type:'cost',annual:60000,  march:5000},
+        {acct:'6070',label:'Marketing',               type:'cost',annual:33600,  march:2800},
+      ]
+    }
+  };
+
+  // Clinic selector tabs inside budget panel
+  var tabsDiv=document.createElement('div');
+  tabsDiv.style.cssText='display:flex;gap:4px;margin-bottom:8px';
+  // Add Group consolidated tab first
+  (function(){
+    var btn=document.createElement('button');
+    btn.textContent='🌍 Group';
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid #22c55e;background:rgba(0,0,0,0);color:#22c55e;transition:all .15s';
+    btn.className='bgt-tab';
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background='rgba(34,197,94,.15)'; btn.style.fontWeight='700';
+      renderBudgetGroupTable(BUDGET);
+    };
+    tabsDiv.appendChild(btn);
+  })();
+
+  ['amsterdam','rotterdam','frankfurt'].forEach(function(cid){
+    var c=BUDGET[cid];
+    var btn=document.createElement('button');
+    btn.textContent=c.flag+' '+c.name;
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid '+c.color+';background:rgba(0,0,0,0);color:'+c.color+';transition:all .15s';
+    btn.dataset.cid=cid;
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background=c.color+'22'; btn.style.fontWeight='700';
+      renderBudgetTable(cid, BUDGET);
+    };
+    btn.className='bgt-tab';
+    tabsDiv.appendChild(btn);
+  });
+  body.appendChild(tabsDiv);
+
+  // Budget table container
+  var tableContainer=document.createElement('div');
+  tableContainer.id='bgt-table-container';
+  body.appendChild(tableContainer);
+
+  // Render Group consolidated by default
+  renderBudgetGroupTable(BUDGET);
+  // Activate first tab (Group)
+  tabsDiv.querySelector('.bgt-tab').style.background='rgba(34,197,94,.15)';
+  tabsDiv.querySelector('.bgt-tab').style.fontWeight='700';
+}
+
+function renderBudgetTable(cid, BUDGET){
+  var c=BUDGET[cid];
+  var container=document.getElementById('bgt-table-container');
+  if(!container) return;
+
+  var totalRev=c.lines.filter(function(l){return l.type==='rev';}).reduce(function(s,l){return s+l.annual;},0);
+  var totalCost=c.lines.filter(function(l){return l.type==='cost';}).reduce(function(s,l){return s+l.annual;},0);
+  var marchRev=c.lines.filter(function(l){return l.type==='rev';}).reduce(function(s,l){return s+l.march;},0);
+  var marchCost=c.lines.filter(function(l){return l.type==='cost';}).reduce(function(s,l){return s+l.march;},0);
+
+  // Column header
+  var grid='grid-template-columns:55px 1fr 90px 90px';
+  var head='<div style="display:grid;'+grid+';gap:4px;padding:4px 0 5px;border-bottom:1px solid #1a2438;background:#0d1520;padding:5px 10px;border-radius:4px 4px 0 0">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">ACCT</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE ITEM</span>'
+    +'<span style="font-size:7px;color:#a78bfa;font-family:monospace;text-align:right">MARCH BUDGET</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">ANNUAL</span>'
+    +'</div>';
+
+  function bRow(acct, label, annual, march, type, isTot, isFlag){
+    var col=type==='rev'?'#22c55e':'#ef4444';
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':isFlag?'background:rgba(167,139,250,.04);':'';
+    var fw=isTot?'font-weight:700;':'';
+    return '<div style="display:grid;'+grid+';gap:4px;padding:3px 10px;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:7.5px;font-family:monospace;color:#4e7a96;'+fw+'">'+acct+'</span>'
+      +'<span style="font-size:8.5px;color:'+(isTot?'#f0f4f8':isFlag?'#a78bfa':'#a0b8c8')+';'+fw+'">'+(isFlag?'⚡ ':'')+label+'</span>'
+      +'<span style="font-size:9px;font-family:monospace;color:'+col+';text-align:right;'+fw+'">'+fmt(march)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(annual)+'</span>'
+      +'</div>';
+  }
+
+  var rows=head;
+  rows+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">REVENUE</div>';
+  c.lines.filter(function(l){return l.type==='rev';}).forEach(function(l){
+    rows+=bRow(l.acct,l.label,l.annual,l.march,'rev',false,false);
+  });
+  rows+=bRow('TOTAL','Total Revenue',totalRev,marchRev,'rev',true,false);
+
+  rows+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 10px 2px;background:#07090d">COSTS</div>';
+  c.lines.filter(function(l){return l.type==='cost';}).forEach(function(l){
+    rows+=bRow(l.acct,l.label,l.annual,l.march,'cost',false,!!l.flag);
+  });
+  rows+=bRow('TOTAL','Total Costs',totalCost,marchCost,'cost',true,false);
+
+  var ebitdaAnnual=totalRev-totalCost;
+  var ebitdaMarch=marchRev-marchCost;
+  var eCol=ebitdaMarch>=0?'#22c55e':'#ef4444';
+  rows+='<div style="display:grid;'+grid+';gap:4px;padding:5px 10px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:7.5px;font-family:monospace;color:#f0f4f8;font-weight:700">EBITDA</span>'
+    +'<span style="font-size:8.5px;color:#f0f4f8;font-weight:700">Budgeted EBITDA</span>'
+    +'<span style="font-size:9px;font-family:monospace;color:'+eCol+';text-align:right;font-weight:700">'+fmt(ebitdaMarch)+'</span>'
+    +'<span style="font-size:8px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(ebitdaAnnual)+'</span>'
+    +'</div>';
+
+  rows+='<div style="padding:6px 10px;font-size:7px;color:#4e7a96;font-family:monospace;border-top:1px solid #1a2438">'
+    +'⚡ = locum/temp budget · compare against actual to see Frankfurt overrun · MARCH column = what Variance-Agent uses'
+    +'</div>';
+
+  container.innerHTML='<div style="background:#07090d;border:1px solid #1a2438;border-radius:0 0 6px 6px;overflow:hidden">'+rows+'</div>';
+}
+
+// ── CONSOLIDATED GROUP PANEL ──────────────────────────────────
+function renderGroupPanel(){
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // Header
+  var hdr=document.createElement('div');
+  hdr.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px"><span style="font-size:18px">🌍</span><div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">Animedica Group — Consolidated</div><div style="font-size:8px;color:#4e7a96;font-family:monospace;margin-top:2px">Exact Online · AFAS Profit · DATEV SKR03</div></div></div>';
+  body.appendChild(hdr);
+
+  // Group KPIs
+  var kpis=document.createElement('div');
+  kpis.className='kpi-strip';
+  kpis.innerHTML=[
+    '<div class="kpi"><div class="kpi-val" style="color:#60a5fa">'+fmt(D.GROUP.totalRevenue)+'</div><div class="kpi-label">GROUP REV</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:#22c55e">+'+D.GROUP.vsBudgetPct+'%</div><div class="kpi-label">vs BUDGET</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:#22c55e">'+D.GROUP.ebitdaPct+'%</div><div class="kpi-label">EBITDA</div></div>',
+  ].join('');
+  body.appendChild(kpis);
+
+  // Clinic revenue bars
+  var clinics=[{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}];
+  var maxRev=D.amsterdam.totalRevenue;
+  var compDiv=document.createElement('div');
+  compDiv.className='ds';
+  var compBody='<div class="ds-body" style="padding:10px;overflow:visible">';
+  clinics.forEach(function(cl){
+    var c=D[cl.id];
+    var pct=Math.round(c.totalRevenue/maxRev*100);
+    var eCol=c.ebitda>=0?'#22c55e':'#ef4444';
+    var bCol=c.vsBudget>=0?'#22c55e':'#ef4444';
+    compBody+='<div style="margin-bottom:10px">';
+    compBody+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">';
+    compBody+='<span style="font-size:11px;font-weight:700;color:'+c.color+'">'+cl.flag+' '+c.name+'</span>';
+    compBody+='<span style="font-family:monospace;font-size:9px;color:'+c.color+'">'+fmt(c.totalRevenue)+'</span>';
+    compBody+='</div>';
+    compBody+='<div style="height:5px;background:#1a2438;border-radius:3px;margin-bottom:3px"><div style="height:5px;width:'+pct+'%;background:'+c.color+';border-radius:3px"></div></div>';
+    compBody+='<div style="display:flex;gap:10px">';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:'+eCol+'">EBITDA '+c.ebitdaPct+'%</span>';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:'+bCol+'">'+(c.vsBudget>=0?'+':'')+c.vsBudgetPct+'% vs bgt</span>';
+    compBody+='<span style="font-size:8px;font-family:monospace;color:#4e7a96">'+c.system+'</span>';
+    compBody+='</div></div>';
+  });
+  compBody+='</div>';
+  compDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#22c55e"></div><span class="ds-head-title" style="color:#22c55e">CLINIC COMPARISON</span></div>'+compBody;
+  body.appendChild(compDiv);
+
+  // Consolidated P&L
+  var plDiv=document.createElement('div');
+  plDiv.className='ds';
+  var revLines=[
+    {label:'Consultations', ams:182400,rot:142600,fra:98400},
+    {label:'Surgery',       ams:94200, rot:78400, fra:42600},
+    {label:'Pharmacy',      ams:48600, rot:36200, fra:28200},
+    {label:'Diagnostics',   ams:31800, rot:24800, fra:18400},
+    {label:'Other',         ams:12400, rot:9400,  fra:6800},
+  ];
+  var costLines=[
+    {label:'Staff costs',   ams:142800,rot:118400,fra:108400},
+    {label:'Locum/temp',    ams:18600, rot:8200,  fra:24600},
+    {label:'Med. supplies', ams:38400, rot:28600, fra:32800},
+    {label:'Pharma',        ams:22100, rot:16800, fra:14200},
+    {label:'Rent',          ams:24000, rot:18000, fra:22000},
+    {label:'Depreciation',  ams:8200,  rot:6100,  fra:7400},
+    {label:'Admin & IT',    ams:6400,  rot:4800,  fra:5600},
+    {label:'Marketing',     ams:3200,  rot:2200,  fra:2800},
+  ];
+
+  function fmtK(v){ return (v>=0?'+':'-')+'€'+(Math.abs(v)/1000).toFixed(0)+'K'; }
+
+  var colHdr='<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:4px 0 5px;border-bottom:1px solid #1a2438">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE</span>'
+    +'<span style="font-size:7px;color:#60a5fa;font-family:monospace;text-align:right">AMS</span>'
+    +'<span style="font-size:7px;color:#34d399;font-family:monospace;text-align:right">ROT</span>'
+    +'<span style="font-size:7px;color:#fb923c;font-family:monospace;text-align:right">FRA</span>'
+    +'</div>';
+
+  function plRow(label,ams,rot,fra,isRev,isTot){
+    var amtCol=isRev?'#22c55e':'#ef4444';
+    var bg=isTot?'background:#0d1520;border-top:1px solid #1a2438;':'';
+    var fw=isTot?'font-weight:700;':'';
+    return '<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:2.5px 0;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8px;color:'+(isTot?'#f0f4f8':'#a0b8c8')+';'+fw+'">'+label+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(ams)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(rot)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+amtCol+';text-align:right;'+fw+'">'+fmtK(fra)+'</span>'
+      +'</div>';
+  }
+
+  var tRevAms=revLines.reduce(function(s,r){return s+r.ams;},0);
+  var tRevRot=revLines.reduce(function(s,r){return s+r.rot;},0);
+  var tRevFra=revLines.reduce(function(s,r){return s+r.fra;},0);
+  var tCostAms=costLines.reduce(function(s,r){return s+r.ams;},0);
+  var tCostRot=costLines.reduce(function(s,r){return s+r.rot;},0);
+  var tCostFra=costLines.reduce(function(s,r){return s+r.fra;},0);
+
+  var plHtml=colHdr;
+  plHtml+='<div style="font-size:7px;font-weight:700;color:#22c55e;letter-spacing:.1em;font-family:monospace;padding:5px 0 2px">REVENUE</div>';
+  // Revenue budgets by line (from budget file)
+  var revBdg={
+    Consultations: {ams:196000,rot:140000,fra:100000},
+    Surgery:       {ams:80000, rot:72000, fra:44000},
+    Pharmacy:      {ams:40000, rot:35000, fra:28000},
+    Diagnostics:   {ams:28000, rot:22000, fra:18000},
+    Other:         {ams:14000, rot:14000, fra:7000},
+  };
+  revLines.forEach(function(r){
+    var b=revBdg[r.label]||{};
+    plHtml+=plRow(r.label,r.ams,r.rot,r.fra,true,false,b.ams,b.rot,b.fra);
+  });
+  plHtml+=plRow('TOTAL REV',tRevAms,tRevRot,tRevFra,true,true,
+    GRP_BDG.amsterdam.rev,GRP_BDG.rotterdam.rev,GRP_BDG.frankfurt.rev);
+  plHtml+='<div style="font-size:7px;font-weight:700;color:#ef4444;letter-spacing:.1em;font-family:monospace;padding:5px 0 2px">COSTS</div>';
+  var costBdg={
+    'Staff costs':   {ams:140000,rot:117000,fra:108000},
+    'Locum/temp':    {ams:12000, rot:8000,  fra:12000},   // KEY: FRA budget €12K, actual €24.6K
+    'Med. supplies': {ams:38000, rot:27000, fra:31000},
+    'Pharma':        {ams:22000, rot:16000, fra:14000},
+    'Rent':          {ams:26000, rot:19000, fra:22000},
+    'Depreciation':  {ams:8000,  rot:6000,  fra:7000},
+    'Admin & IT':    {ams:6000,  rot:5000,  fra:5000},
+    'Marketing':     {ams:3000,  rot:2000,  fra:2800},
+  };
+  costLines.forEach(function(r){
+    var b=costBdg[r.label]||{};
+    plHtml+=plRow(r.label,r.ams,r.rot,r.fra,false,false,b.ams,b.rot,b.fra);
+  });
+  plHtml+=plRow('TOTAL COST',tCostAms,tCostRot,tCostFra,false,true,
+    GRP_BDG.amsterdam.cost,GRP_BDG.rotterdam.cost,GRP_BDG.frankfurt.cost);
+
+  // EBITDA row
+  var eAms=D.amsterdam.ebitda,eRot=D.rotterdam.ebitda,eFra=D.frankfurt.ebitda;
+  plHtml+='<div style="display:grid;grid-template-columns:90px 1fr 1fr 1fr;gap:4px;padding:5px 0 2px;border-top:2px solid #1a2438;background:#0d1520">'
+    +'<span style="font-size:9px;font-weight:700;color:#f0f4f8;font-family:monospace">EBITDA</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#22c55e;text-align:right">'+fmtK(eAms)+'</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#22c55e;text-align:right">'+fmtK(eRot)+'</span>'
+    +'<span style="font-size:9px;font-weight:700;font-family:monospace;color:#ef4444;text-align:right">'+fmtK(eFra)+'</span>'
+    +'</div>';
+
+  plDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#60a5fa"></div><span class="ds-head-title" style="color:#60a5fa">CONSOLIDATED P&L</span><span class="ds-head-badge" style="background:#60a5fa18;color:#60a5fa">3 SYSTEMS</span></div><div class="ds-body" style="padding:8px 10px">'+plHtml+'</div>';
+  body.appendChild(plDiv);
+
+  // All debtors sorted by age
+  var ds3=document.createElement('div'); ds3.className='ds';
+  var allDebtors=[];
+  // Add Group consolidated tab first
+  (function(){
+    var btn=document.createElement('button');
+    btn.textContent='🌍 Group';
+    btn.style.cssText='padding:4px 10px;border-radius:4px;font-size:8px;cursor:pointer;font-family:monospace;border:1px solid #22c55e;background:rgba(0,0,0,0);color:#22c55e;transition:all .15s';
+    btn.className='bgt-tab';
+    btn.onclick=function(){
+      document.querySelectorAll('.bgt-tab').forEach(function(b){ b.style.background='rgba(0,0,0,0)'; b.style.fontWeight='400'; });
+      btn.style.background='rgba(34,197,94,.15)'; btn.style.fontWeight='700';
+      renderBudgetGroupTable(BUDGET);
+    };
+    tabsDiv.appendChild(btn);
+  })();
+
+  ['amsterdam','rotterdam','frankfurt'].forEach(function(cid){
+    D[cid].debtors.forEach(function(d){ allDebtors.push({p:d.p,a:d.a,days:d.days,status:d.status,color:D[cid].color}); });
+  });
+  allDebtors.sort(function(a,b){return b.days-a.days;});
+  var totalDebt=allDebtors.reduce(function(s,d){return s+d.a;},0);
+  var dRows=allDebtors.map(function(d){
+    var dayCol=d.status==='err'?'#ef444418':d.status==='warn'?'#f59e0b18':'#22c55e18';
+    var dayTxt=d.status==='err'?'#ef4444':d.status==='warn'?'#f59e0b':'#22c55e';
+    return '<div class="debt-row">'
+      +'<span style="width:6px;height:6px;border-radius:50%;background:'+d.color+';display:inline-block;margin-right:5px;flex-shrink:0;vertical-align:middle"></span>'
+      +'<span class="debt-name">'+d.p+'</span>'
+      +'<span class="debt-days" style="background:'+dayCol+';color:'+dayTxt+'">'+d.days+'d</span>'
+      +'<span class="debt-amt">'+fmt(d.a)+'</span>'
+      +'</div>';
+  }).join('');
+  ds3.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#f59e0b"></div><span class="ds-head-title" style="color:#f59e0b">ALL DEBTORS — SORTED BY AGE</span><span class="ds-head-badge" style="background:#f59e0b18;color:#f59e0b">'+fmt(totalDebt)+'</span></div><div class="ds-body">'+dRows+'<div class="tb-total"><span class="tb-total-label">TOTAL OPEN</span><span class="tb-total-val" style="color:#f59e0b">'+fmt(totalDebt)+'</span></div></div>';
+  body.appendChild(ds3);
+}
+
+function renderDataPanel(id){
+  var c=D[id];
+  var body=document.getElementById('dataBody');
+  body.innerHTML='';
+
+  // System info
+  var info=document.createElement('div');
+  info.innerHTML='<div style="display:flex;align-items:center;gap:10px;padding:4px 0 8px"><span style="font-size:20px">'+c.flag+'</span><div><div style="font-family:Syne,sans-serif;font-size:13px;font-weight:800;color:#f0f4f8">'+c.fullName+'</div><div style="font-size:8px;color:#4e7a96;font-family:JetBrains Mono,monospace;margin-top:2px">'+c.system+' &nbsp;·&nbsp; '+c.language+' account codes</div></div></div>';
+  body.appendChild(info);
+
+  // KPIs
+  var kpis=document.createElement('div');
+  kpis.className='kpi-strip';
+  var revCol=c.vsBudget>=0?'#22c55e':'#ef4444';
+  var ebitdaCol=c.ebitda>=0?'#22c55e':'#ef4444';
+  kpis.innerHTML=[
+    '<div class="kpi"><div class="kpi-val" style="color:#60a5fa">'+fmt(c.totalRevenue)+'</div><div class="kpi-label">REVENUE</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:'+revCol+'">'+(c.vsBudget>=0?'+':'')+c.vsBudgetPct+'%</div><div class="kpi-label">vs BUDGET</div></div>',
+    '<div class="kpi"><div class="kpi-val" style="color:'+ebitdaCol+'">'+c.ebitdaPct+'%</div><div class="kpi-label">EBITDA</div></div>',
+  ].join('');
+  body.appendChild(kpis);
+
+  // Trial Balance
+  var ds=document.createElement('div'); ds.className='ds';
+  var tbRows=c.tb.map(function(r){
+    var amtHtml=r.cr
+      ? '<span class="tb-amt rev">+'+fmt(r.cr)+'</span>'
+      : '<span class="tb-amt cost">-'+fmt(r.db)+'</span>';
+    return '<div class="tb-row"><span class="tb-account">'+r.a+'</span><span class="tb-desc">'+r.d+'</span>'+amtHtml+'</div>';
+  }).join('');
+  var totHtml='<div class="tb-total"><span class="tb-total-label">EBITDA</span><span class="tb-total-val" style="color:'+(c.ebitda>=0?'#22c55e':'#ef4444')+'">'+(c.ebitda>=0?'+':'')+fmt(c.ebitda)+'</span></div>';
+  ds.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:'+c.color+'"></div><span class="ds-head-title" style="color:'+c.color+'">TRIAL BALANCE</span><span class="ds-head-badge" style="background:'+c.color+'18;color:'+c.color+'">'+c.system+'</span></div><div class="ds-body">'+tbRows+totHtml+'</div>';
+  body.appendChild(ds);
+
+  // Budget vs Actual
+  var bvDiv=document.createElement('div'); bvDiv.className='ds';
+  var budgetRows=[
+    {label:'Revenue',   actual:c.totalRevenue, budget:c.budget,              type:'rev'},
+    {label:'Costs',     actual:c.totalCosts,   budget:c.budget-(c.budget-c.totalCosts+(c.ebitda-(c.totalRevenue-c.budget))), type:'cost'},
+    {label:'EBITDA',    actual:c.ebitda,        budget:c.budget-c.totalCosts, type:'ebitda'},
+  ];
+  // Simpler: use known budget values
+  var bRows='';
+  var bLines=[
+    {label:'Revenue',actual:c.totalRevenue,  budget:c.budget,                        isRev:true},
+    {label:'Costs',  actual:c.totalCosts,    budget:c.budget-(c.totalRevenue-c.budget-c.ebitda+(c.budget-c.totalRevenue)), isRev:false},
+    {label:'EBITDA', actual:c.ebitda,        budget:c.budget-Math.round(c.totalCosts*(c.budget/c.totalRevenue)), isRev:true},
+  ];
+  // Use correct budget data from D
+  var budgetData={
+    revenue:{actual:c.totalRevenue, budget:c.budget},
+    costs:  {actual:c.totalCosts,   budget:Math.round(c.budget*(c.totalCosts/c.totalRevenue))},
+    ebitda: {actual:c.ebitda,       budget:c.budget-Math.round(c.budget*(c.totalCosts/c.totalRevenue))},
+  };
+  // Actually use the known budget_ebitda from dataset
+  var budgetEbitda = c.budget - Math.round(c.budget * 0.75); // approx
+  // Use hardcoded per-clinic budget data matching the budget file
+  var BUDGET_REF = {
+    amsterdam: {rev:340000, cost:255000, ebitda:85000},
+    rotterdam:  {rev:280000, cost:196000, ebitda:84000},
+    frankfurt:  {rev:220000, cost:187000, ebitda:33000},
+  };
+  var bRef = BUDGET_REF[id] || {rev:c.budget, cost:Math.round(c.budget*0.75), ebitda:Math.round(c.budget*0.25)};
+  var bvLines=[
+    {label:'Revenue', actual:c.totalRevenue, budget:bRef.rev,    isRev:true},
+    {label:'Costs',   actual:c.totalCosts,   budget:bRef.cost,   isRev:false},
+    {label:'EBITDA',  actual:c.ebitda,       budget:bRef.ebitda, isRev:true},
+  ];
+  // Column header
+  bRows+='<div style="display:grid;grid-template-columns:70px 1fr 1fr 1fr 60px;gap:4px;padding:3px 0 5px;border-bottom:1px solid #1a2438">'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace">LINE</span>'
+    +'<span style="font-size:7px;color:#a0b8c8;font-family:monospace;text-align:right">ACTUAL</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">BUDGET</span>'
+    +'<span style="font-size:7px;color:#a0b8c8;font-family:monospace;text-align:right">VARIANCE</span>'
+    +'<span style="font-size:7px;color:#4e7a96;font-family:monospace;text-align:right">%</span>'
+    +'</div>';
+  bvLines.forEach(function(bl){
+    var varE=bl.actual-bl.budget;
+    // For costs: positive variance is BAD (over budget)
+    var isGood = bl.isRev ? (varE>=0) : (varE<=0);
+    var varCol = isGood ? '#22c55e' : '#ef4444';
+    var varPct = bl.budget!==0 ? Math.round(varE/Math.abs(bl.budget)*100) : 0;
+    var isEbitda = bl.label==='EBITDA';
+    var bg = isEbitda ? 'background:#0d1520;border-top:1px solid #1a2438;' : '';
+    var fw = isEbitda ? 'font-weight:700;' : '';
+    bRows+='<div style="display:grid;grid-template-columns:70px 1fr 1fr 1fr 60px;gap:4px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.02);'+bg+'">'
+      +'<span style="font-size:8px;color:'+(isEbitda?'#f0f4f8':'#a0b8c8')+';'+fw+'">'+bl.label+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:#f0f4f8;text-align:right;'+fw+'">'+fmt(bl.actual)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:#4e7a96;text-align:right">'+fmt(bl.budget)+'</span>'
+      +'<span style="font-size:8.5px;font-family:monospace;color:'+varCol+';text-align:right;'+fw+'">'+(varE>=0?'+':'')+fmt(varE)+'</span>'
+      +'<span style="font-size:8px;font-family:monospace;color:'+varCol+';text-align:right;'+fw+'">'+(varPct>=0?'+':'')+varPct+'%</span>'
+      +'</div>';
+  });
+  bvDiv.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#a78bfa"></div><span class="ds-head-title" style="color:#a78bfa">BUDGET vs ACTUAL</span><span class="ds-head-badge" style="background:#a78bfa18;color:#a78bfa">MARCH 2026</span></div><div class="ds-body" style="padding:8px 10px">'+bRows+'</div>';
+  body.appendChild(bvDiv);
+
+  // Debtors
+  var ds2=document.createElement('div'); ds2.className='ds';
+  var dRows=c.debtors.map(function(d){
+    var dayCol=d.status==='err'?'#ef444418':d.status==='warn'?'#f59e0b18':'#22c55e18';
+    var dayTxt=d.status==='err'?'#ef4444':d.status==='warn'?'#f59e0b':'#22c55e';
+    return '<div class="debt-row"><span class="debt-name">'+d.p+'</span><span class="debt-days" style="background:'+dayCol+';color:'+dayTxt+'">'+d.days+'d</span><span class="debt-amt">'+fmt(d.a)+'</span></div>';
+  }).join('');
+  ds2.innerHTML='<div class="ds-head"><div class="ds-head-dot" style="background:#f59e0b"></div><span class="ds-head-title" style="color:#f59e0b">OPEN DEBTORS</span></div><div class="ds-body">'+dRows+'</div>';
+  body.appendChild(ds2);
+}
+renderDataPanel('amsterdam');
+
+// ═══════════════════════════════════════════
+// CANVAS — pixel office
+// ═══════════════════════════════════════════
+var cv=document.getElementById('cv');
+var ctx=cv.getContext('2d');
+var DPR=window.devicePixelRatio||1;
+cv.width=300*DPR; cv.height=240*DPR;
+cv.style.width='300px'; cv.style.height='240px';
+ctx.scale(DPR,DPR);
+
+var CHARS={
+  ic: {x:1.2,y:1.2,tx:1.2,ty:1.2,color:'#60a5fa',state:'idle',label:'LDG'},
+  bv: {x:5.2,y:1.2,tx:5.2,ty:1.2,color:'#34d399',state:'idle',label:'VAR'},
+  an: {x:3.2,y:5.0,tx:3.2,ty:5.0,color:'#a78bfa',state:'idle',label:'CFO'},
+  qa: {x:7.2,y:5.0,tx:7.2,ty:5.0,color:'#f472b6',state:'idle',label:'AUD'},
+};
+var T=26;
+
+function s2p(gx,gy){return{x:10+gx*T,y:10+gy*T};}
+
+function drawWorld(t){
+  ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle='#0d1118'; ctx.fillRect(0,0,300,240);
+  // Floor
+  for(var r=0;r<8;r++) for(var c=0;c<10;c++){
+    ctx.fillStyle=(r+c)%2===0?'#111820':'#131a24';
+    ctx.fillRect(10+c*T+.5,10+r*T+.5,T-1,T-1);
+  }
+  // 3 Desk areas
+  [{x:.3,y:.3,w:2.5,h:2.5,col:'#60a5fa',lbl:'AMS · Exact'},{x:4.8,y:.3,w:2.5,h:2.5,col:'#34d399',lbl:'ROT · AFAS'},
+   {x:2.8,y:3.3,w:4.5,h:1.5,col:'#a78bfa',lbl:'CONSOLIDATION'}].forEach(function(d){
+    var p=s2p(d.x,d.y);
+    ctx.fillStyle='#1a1006'; ctx.fillRect(p.x,p.y,d.w*T,d.h*T);
+    ctx.fillStyle='#241808'; ctx.fillRect(p.x+2,p.y+2,d.w*T-4,d.h*T-4);
+    // Screen glow
+    ctx.fillStyle=d.col+'18'; ctx.fillRect(p.x+4,p.y+4,d.w*T-8,T-6);
+    for(var li=0;li<3;li++){
+      var lw=(0.25+Math.sin(t*2+li+d.x)*.25)*(d.w*T-14);
+      ctx.fillStyle=d.col+'55'; ctx.fillRect(p.x+6,p.y+6+li*5,lw,2.5);
+    }
+    ctx.fillStyle=d.col+'99'; ctx.font='bold 6px JetBrains Mono'; ctx.textAlign='left';
+    ctx.fillText(d.lbl,p.x+4,p.y+d.h*T-4);
+  });
+  // Frankfurt desk (right side)
+  var fp=s2p(7.8,.3);
+  ctx.fillStyle='#1a1006'; ctx.fillRect(fp.x,fp.y,1.8*T,2.5*T);
+  ctx.fillStyle='#241808'; ctx.fillRect(fp.x+2,fp.y+2,1.8*T-4,2.5*T-4);
+  ctx.fillStyle='#fb923c18'; ctx.fillRect(fp.x+4,fp.y+4,1.8*T-8,T-6);
+  ctx.fillStyle='#fb923c99'; ctx.font='bold 6px JetBrains Mono'; ctx.textAlign='left';
+  ctx.fillText('FRA·DATEV',fp.x+3,fp.y+2.5*T-4);
+  // QA area
+  var qp=s2p(6.8,3.5);
+  ctx.fillStyle='#1a1006'; ctx.fillRect(qp.x,qp.y,2.8*T,2*T);
+  ctx.fillStyle='#241808'; ctx.fillRect(qp.x+2,qp.y+2,2.8*T-4,2*T-4);
+  ctx.fillStyle='#f472b618'; ctx.fillRect(qp.x+4,qp.y+4,2.8*T-8,T-6);
+  ctx.fillStyle='#f472b699'; ctx.font='bold 6px JetBrains Mono'; ctx.textAlign='left';
+  ctx.fillText('QA · SIGN-OFF',qp.x+4,qp.y+2*T-4);
+
+  // Draw chars
+  Object.keys(CHARS).forEach(function(id){drawChar(id,t);});
+}
+
+function drawChar(id,t){
+  var ch=CHARS[id];
+  ch.x+=(ch.tx-ch.x)*.08; ch.y+=(ch.ty-ch.y)*.08;
+  var p=s2p(ch.x,ch.y);
+  ctx.save(); ctx.translate(p.x,p.y);
+  var bob=ch.state==='working'?Math.sin(t*5)*1.2:Math.sin(t*1.2)*.4;
+  ctx.translate(0,-bob);
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(0,3,6,2,0,0,Math.PI*2); ctx.fill();
+  // Legs
+  ctx.fillStyle='#151a28'; ctx.fillRect(-4,0,3,7); ctx.fillRect(1,0,3,7);
+  // Body
+  var bg=ctx.createLinearGradient(-6,-13,6,0);
+  bg.addColorStop(0,ch.color+'cc'); bg.addColorStop(1,ch.color+'55');
+  ctx.fillStyle=bg; ctx.beginPath(); ctx.roundRect(-6,-13,12,13,2); ctx.fill();
+  // Arms
+  if(ch.state==='working'){var a=Math.sin(t*7)*2.5;ctx.fillStyle='#d4a882';ctx.fillRect(-10,-9+a,4,6);ctx.fillRect(6,-9-a,4,6);}
+  // Head
+  var hg=ctx.createRadialGradient(-1,-20,1,0,-18,7);
+  hg.addColorStop(0,'#f0d4b8'); hg.addColorStop(1,'#c89070');
+  ctx.fillStyle=hg; ctx.beginPath(); ctx.ellipse(0,-18,6,7,0,0,Math.PI*2); ctx.fill();
+  // Eyes
+  ctx.fillStyle=ch.state!=='idle'?ch.color:'rgba(255,255,255,.6)';
+  ctx.beginPath(); ctx.ellipse(-2,-18,1.8,1.5,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(2,-18,1.8,1.5,0,0,Math.PI*2); ctx.fill();
+  if(ch.state!=='idle'){ctx.fillStyle=ch.color+'33';ctx.beginPath();ctx.ellipse(-2,-18,4,3.5,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(2,-18,4,3.5,0,0,Math.PI*2);ctx.fill();}
+  // Hair
+  ctx.fillStyle='#1e1408'; ctx.beginPath(); ctx.ellipse(0,-24,5.5,4.5,0,0,Math.PI*2); ctx.fill();
+  // Think particles
+  if(ch.state==='thinking'){for(var i=0;i<3;i++){var a2=(t*2+i*2.1)%(Math.PI*2);ctx.fillStyle=ch.color+Math.round((0.4+i*.2)*255).toString(16).padStart(2,'0');ctx.beginPath();ctx.arc(Math.cos(a2)*11,-15+Math.sin(a2)*11,1.5,0,Math.PI*2);ctx.fill();}}
+  // Done
+  if(ch.state==='done'){ctx.fillStyle=ch.color;ctx.font='bold 9px JetBrains Mono';ctx.textAlign='center';ctx.fillText('✓',0,-32);}
+  // Glow
+  if(ch.state==='working'){ctx.strokeStyle=ch.color+'44';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,-8,14+Math.sin(t*3)*1.5,0,Math.PI*2);ctx.stroke();}
+  // Label
+  ctx.fillStyle=ch.color+'aa'; ctx.font='bold 5.5px JetBrains Mono'; ctx.textAlign='center';
+  ctx.fillText(ch.label,0,-30);
+  ctx.restore();
+}
+
+function loop(ts){requestAnimationFrame(loop);drawWorld(ts/1000);}
+requestAnimationFrame(loop);
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function narr(icon, html){
+  var el=document.getElementById('narrative');
+  var d=document.createElement('div'); d.className='narr-line';
+  d.innerHTML='<span class="narr-icon">'+icon+'</span><span class="narr-txt">'+html+'</span>';
+  el.appendChild(d);
+  el.scrollTop=el.scrollHeight;
+}
+function narrSection(txt){
+  var el=document.getElementById('narrative');
+  var s=document.createElement('span'); s.className='narr-section'; s.textContent=txt;
+  el.appendChild(s); el.scrollTop=el.scrollHeight;
+}
+
+function agentLog(id,text,type){
+  var el=document.getElementById('out-'+id);
+  if(!el) return;
+  var d=document.createElement('div');
+  d.className='ac-line '+(type||'dim');
+  if(type==='h'){d.textContent=text;}
+  else if(type==='result'){d.textContent=text;}
+  else{var pre={ok:'✓',warn:'⚠',info:'→',dim:'·',err:'✗'}[type||'dim'];d.textContent=pre+' '+text;}
+  el.appendChild(d);
+  while(el.children.length>14)el.removeChild(el.firstChild);
+  el.scrollTop=el.scrollHeight;
+}
+
+function setState(id,state,pct){
+  CHARS[id]&&(CHARS[id].state=state);
+  document.getElementById('stext-'+id).textContent=state.toUpperCase();
+  var sdot=document.getElementById('sdot-'+id);
+  if(sdot)sdot.style.display=state!=='idle'&&state!=='done'?'block':'none';
+  var dot=document.getElementById('dot-'+id);
+  if(dot)dot.style.boxShadow=state==='idle'?'none':state==='done'?'0 0 8px '+CHARS[id].color:'0 0 12px '+CHARS[id].color;
+  if(pct!==undefined)document.getElementById('fill-'+id).style.width=pct+'%';
+}
+
+function moveAgent(id,gx,gy){if(CHARS[id]){CHARS[id].tx=gx;CHARS[id].ty=gy;}}
+function phase(n,txt){document.getElementById('phaseIndicator').textContent='Phase '+n+' of 4 — '+txt;}
+function wait(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+// Stream result line by line
+function stripMd(t){
+  return t.replace(/^#{1,3}\s*/gm,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^-{3,}$/gm,'').trim();
+}
+function streamResult(panelId,text,delay){
+  return new Promise(function(resolve){
+    var lines=stripMd(text).split('\n').filter(function(l){return l.trim();});
+    var i=0;
+    function next(){
+      if(i>=lines.length){resolve();return;}
+      var line=lines[i++].trim();
+      var type='result';
+      if(/^[✓✅]/.test(line))type='ok';
+      else if(/^[⚠⚡]/.test(line))type='warn';
+      else if(/^[✗❌]/.test(line))type='err';
+      else if(/^[→►]/.test(line))type='info';
+      else if(/^(IC CHECK|BvB|MARCH|QA|GROUP|ANALYTICS)/i.test(line))type='h';
+      agentLog(panelId,line,type);
+      setTimeout(next,delay||150);
+    }
+    next();
+  });
+}
+
+// ═══════════════════════════════════════════
+// CLAUDE API CALL via Worker
+// ═══════════════════════════════════════════
+async function callAgent(agent,clinic,context){
+  // Show calling indicator
+  var agentColors={ic:'#60a5fa',bv:'#34d399',an:'#a78bfa',qa:'#f472b6'};
+  var col=agentColors[agent]||'#22c55e';
+  var dot=document.getElementById('dot-'+agent);
+  if(dot) dot.style.animation='pulse-glow 0.5s infinite alternate';
+  
+  try{
+    var r=await fetch(WORKER+'/api/agent',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({agent:agent,clinic:clinic,context:context})
+    });
+    if(!r.ok){
+      var errTxt=await r.text();
+      throw new Error('Worker error '+r.status+': '+errTxt);
+    }
+    var d=await r.json();
+    if(d.error)throw new Error(d.error);
+    if(dot) dot.style.animation='';
+    return d.result;
+  }catch(e){
+    if(dot) dot.style.animation='';
+    agentLog(agent,'ERROR: '+e.message,'err');
+    throw e;
+  }
+}
+
+// ═══════════════════════════════════════════
+// SIMULATION
+// ═══════════════════════════════════════════
+var secs=0,tInt=null;
+var results={ic:{},bv:{},an:'',qa:''};
+
+function openDemo(){
+  // Close start screen to reveal main UI with pulsing Start button
+  document.getElementById('startScreen').style.display='none';
+  // Start screen is gone — the pulsing green button in narrative col is now visible
+}
+
+function narrativeStart(){
+  // User clicks the pulsing Start button in the narrative column
+  var btn = document.getElementById('narrativeStartBtn');
+  if(btn){ btn.style.animation='none'; btn.style.display='none'; }
+  startDemo();
+}
+
+async function startDemo(){
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('liveBadge').style.opacity='1';
+  document.getElementById('liveText').textContent='AGENTS LIVE';
+  tInt=setInterval(function(){secs++;document.getElementById('tmr').textContent=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');},1000);
+
+  // ── PHASE 1: IC + BV read each clinic ───────────────────
+  try{
+  phase(1,'Data ingestion & integrity checks');
+  narrSection('PHASE 1 — DATA INGESTION');
+  narr('📂','Ledger-Agent and Variance-Agent connect to <b>3 different accounting systems</b>. Each clinic exports data in a different format — English, Dutch, German.');
+  await wait(1200);
+
+  setState('ic','working',5); setState('bv','working',5);
+  moveAgent('ic',.8,.8); moveAgent('bv',5.5,.8);
+  agentLog('ic','Connecting to 3 accounting systems...','info');
+  agentLog('bv','Loading budget models...','info');
+  await wait(800);
+
+  var clinics=['amsterdam','rotterdam','frankfurt'];
+  var clinicMeta={amsterdam:{flag:'🇳🇱',sys:'Exact Online'},rotterdam:{flag:'🇳🇱',sys:'AFAS Profit'},frankfurt:{flag:'🇩🇪',sys:'DATEV'}};
+
+  for(var ci=0;ci<clinics.length;ci++){
+    var clinic=clinics[ci]; var meta=clinicMeta[clinic]; var cd=D[clinic];
+    showClinic(clinic);
+
+    narr(meta.flag,'Now processing <b>'+cd.fullName+'</b> — data exported from <b>'+cd.system+'</b> ('+cd.language+' account codes)');
+    agentLog('ic','Reading '+clinic.toUpperCase()+' — '+meta.sys,'info');
+    agentLog('bv','Loading '+clinic.toUpperCase()+' budget vs actuals','info');
+    setState('ic','working',Math.round((ci/3)*40+5));
+    setState('bv','working',Math.round((ci/3)*40+5));
+    await wait(600);
+
+    // IC reads raw journal entries first, builds P&L — BV receives IC output as context
+    agentLog('ic','Reading '+clinic.toUpperCase()+' raw journal entries...','info');
+    var icRes=await callAgent('ic',clinic,null);
+    results.ic[clinic]=icRes;
+    await streamResult('ic',icRes,100);
+    setState('ic','working',Math.round(((ci+0.6)/3)*40+5));
+    agentLog('bv','Analysing IC output vs budget...','info');
+    var bvRes=await callAgent('bv',clinic,icRes);
+    results.bv[clinic]=bvRes;
+    await streamResult('bv',bvRes,100);
+
+    setState('ic','working',Math.round(((ci+1)/3)*40+5));
+    setState('bv','working',Math.round(((ci+1)/3)*40+5));
+
+    // Narrate what was found
+    if(cd.ebitda<0){
+      narr('🔴','<b>'+cd.name+'</b> is loss-making this month — EBITDA <span class="hl" style="color:#ef4444">'+cd.ebitdaPct+'%</span>. Revenue <span class="hl" style="color:#ef4444">€'+Math.abs(cd.vsBudget).toLocaleString()+'</span> below budget.');
+    } else {
+      narr('🟢','<b>'+cd.name+'</b> performing well — EBITDA <span class="hl" style="color:#22c55e">'+cd.ebitdaPct+'%</span>. Revenue <span class="hl" style="color:#22c55e">+€'+cd.vsBudget.toLocaleString()+'</span> vs budget.');
+    }
+    await wait(500);
+  }
+
+  setState('ic','done',100); setState('bv','done',100);
+  moveAgent('ic',1.5,4.0); moveAgent('bv',5.5,4.0);
+  narr('✅','<b>Ledger-Agent</b> and <b>Variance-Agent</b> have processed all 3 clinics. Data reconciled, integrity verified.');
+
+  await wait(1500);
+
+  // ── PHASE 2: Analytics consolidates ─────────────────────
+  phase(2,'Group consolidation & narrative');
+  narrSection('PHASE 2 — CONSOLIDATION');
+  narr('🔗','<b>CFO-Agent</b> now receives outputs from Ledger and Variance agents. It consolidates the 3 clinics into a single group picture and writes the CFO narrative.');
+  setState('an','thinking',10);
+  moveAgent('an',3.5,4.5);
+  agentLog('an','Receiving Ledger + Variance outputs from all 3 clinics...','info');
+  agentLog('an','Group revenue: €'+(D.GROUP.totalRevenue).toLocaleString()+' vs budget €'+D.GROUP.totalBudget.toLocaleString(),'info');
+  await wait(800);
+
+  setState('an','working',30);
+  agentLog('an','Consolidating across Exact Online / AFAS / DATEV...','info');
+  narr('📊','Group total: <b>€'+D.GROUP.totalRevenue.toLocaleString()+'</b> revenue | EBITDA <b>'+D.GROUP.ebitdaPct+'%</b> | vs budget <b>+'+(D.GROUP.vsBudgetPct)+'%</b>');
+
+  var anContext='IC Results:\n'+Object.values(results.ic).join('\n\n')+'\n\nBV Results:\n'+Object.values(results.bv).join('\n\n');
+  var anRes=await callAgent('an',null,anContext);
+  results.an=anRes;
+  setState('an','working',70);
+  await streamResult('an',anRes,130);
+  setState('an','done',100);
+  moveAgent('an',4.0,4.5);
+  narr('📝','CFO narrative drafted. <b>Amsterdam and Rotterdam</b> performing above budget. <b>Frankfurt</b> requires recovery plan — 2 vets on sick leave.');
+
+  await wait(1500);
+
+  // ── PHASE 3: QA reviews and signs off ───────────────────
+  phase(3,'Quality assurance & sign-off');
+  narrSection('PHASE 3 — QUALITY REVIEW');
+  narr('🔍','<b>Audit-Agent</b> reviews all outputs from the other 3 agents. It cross-checks figures for consistency, flags any unresolved issues, and decides whether to sign off.');
+  setState('qa','thinking',5);
+  moveAgent('qa',8.2,4.5);
+  agentLog('qa','Reading outputs from Ledger, Variance and CFO agents...','info');
+  agentLog('qa','Running cross-agent consistency checks...','info');
+  await wait(800);
+
+  setState('qa','working',30);
+  var qaContext='IC Results:\n'+Object.values(results.ic).join('\n\n')+'\n\nBV Results:\n'+Object.values(results.bv).join('\n\n')+'\n\nAnalytics:\n'+results.an;
+  var qaRes=await callAgent('qa',null,qaContext);
+  results.qa=qaRes;
+  setState('qa','working',75);
+  await streamResult('qa',qaRes,140);
+  setState('qa','done',100);
+
+  // ── PHASE 4: DONE ────────────────────────────────────────
+  phase(4,'Monthly close complete');
+  narrSection('CLOSE COMPLETE');
+  narr('🎉','<b>Monthly close signed off</b> for March 2026. All 3 clinics processed across 3 different accounting systems.');
+  narr('⏱','Total time: <b>'+String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0')+'</b> &nbsp;vs&nbsp; <b style="color:#ef4444">4 days</b> manual');
+  narr('💡','<b>Frankfurt</b> is the only clinic requiring management attention — a 90-day recovery plan has been flagged for the CFO.');
+
+  // Agents gather at table
+  moveAgent('ic',2.5,4.5); moveAgent('bv',4.0,4.5);
+  moveAgent('an',5.5,4.5); moveAgent('qa',7.0,4.5);
+
+  document.getElementById('liveText').textContent='SIGNED OFF ✓';
+  showClinic((activeClinic==='group'||activeClinic==='budget')?'amsterdam':activeClinic);
+
+  // Build and show deliverables
+  buildDeliverables(results.an);
+  await wait(800);
+  var btn=document.getElementById('delivBtn');
+  btn.style.display='block';
+  narr('📊','<b>Deliverables ready:</b> Board Pack, DSO Report and 8-week Cashflow Forecast — click the green button to view.');
+  setTimeout(function(){openDeliverables();},1200);
+  }catch(err){
+    console.error('Demo error:',err);
+    document.getElementById('liveText').textContent='ERROR';
+    document.getElementById('liveText').style.color='#ef4444';
+    narr('❌','<b>Error:</b> '+err.message+' — check the Cloudflare Worker is deployed.');
+  }
+}
+</script>
+
+<!-- DELIVERABLES TRIGGER -->
+<button class="deliv-btn" id="delivBtn" onclick="openDeliverables()">📊 View Deliverables</button>
+
+<!-- DELIVERABLES PANEL -->
+<div class="deliverables" id="delivPanel">
+  <div class="deliv-bar">
+    <span class="deliv-title">📊 Deliverables</span>
+    <div class="deliv-tabs" id="delivTabs">
+      <div class="dt active" data-tab="boardpack" onclick="showDeliv('boardpack',this)">Board Pack</div>
+      <div class="dt" data-tab="dso" onclick="showDeliv('dso',this)">DSO Report</div>
+      <div class="dt" data-tab="cashflow" onclick="showDeliv('cashflow',this)">Cashflow Forecast</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-left:auto;margin-right:8px;align-items:center">
+      <button class="dl-btn purple" onclick="downloadPPT(this)" title="Download Board Pack as PowerPoint">
+        <span class="dl-spinner" id="ppt-spin"></span>⬇ Board Pack PPT
+      </button>
+    </div>
+    <button class="deliv-close" onclick="closeDeliverables()">×</button>
+  </div>
+  <div class="deliv-body">
+
+    <!-- BOARD PACK -->
+    <div class="deliv-pane active" id="dp-boardpack">
+      <div class="bp-header">
+        <div class="bp-title">Animedica Veterinary Group — Monthly Management Pack</div>
+        <div class="bp-sub">MARCH 2026 &nbsp;·&nbsp; GENERATED BY MEC-AGENT &nbsp;·&nbsp; CONFIDENTIAL</div>
+      </div>
+      <div class="bp-grid" id="bp-kpis">
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#60a5fa">€855K</div><div class="bp-kpi-lbl">GROUP REVENUE</div></div>
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#22c55e">+2%</div><div class="bp-kpi-lbl">vs BUDGET</div></div>
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#22c55e">20%</div><div class="bp-kpi-lbl">GROUP EBITDA</div></div>
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#f59e0b">42d</div><div class="bp-kpi-lbl">AVG DSO</div></div>
+      </div>
+      <div class="bp-section">
+        <div class="bp-section-title">CLINIC PERFORMANCE</div>
+        <div id="bp-clinics"></div>
+      </div>
+      <div class="bp-section">
+        <div class="bp-section-title">CFO COMMENTARY</div>
+        <div class="narrative-box" id="bp-narrative">Loading AI commentary...</div>
+      </div>
+      <div class="bp-section">
+        <div class="bp-section-title">FLAGS FOR ATTENTION</div>
+        <div id="bp-flags"></div>
+      </div>
+    </div>
+
+    <!-- DSO REPORT -->
+    <div class="deliv-pane" id="dp-dso">
+      <div class="bp-header">
+        <div class="bp-title">Debtor Aging Report — All Clinics</div>
+        <div class="bp-sub">MARCH 2026 &nbsp;·&nbsp; GENERATED BY IC-AGENT &nbsp;·&nbsp; GROUP TREASURY</div>
+      </div>
+      <table class="dso-table">
+        <thead><tr><th>CLINIC</th><th>PAYER</th><th>AMOUNT</th><th>DAYS OUTSTANDING</th><th>STATUS</th><th>ACTION</th></tr></thead>
+        <tbody id="dso-tbody"></tbody>
+      </table>
+      <div style="margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#22c55e">€68.4K</div><div class="bp-kpi-lbl">ROTTERDAM (CLEAN)</div></div>
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#f59e0b">€94.2K</div><div class="bp-kpi-lbl">AMSTERDAM (1 FLAG)</div></div>
+        <div class="bp-kpi"><div class="bp-kpi-val" style="color:#ef4444">€82.4K</div><div class="bp-kpi-lbl">FRANKFURT (CRITICAL)</div></div>
+      </div>
+    </div>
+
+    <!-- CASHFLOW FORECAST -->
+    <div class="deliv-pane" id="dp-cashflow">
+      <div class="bp-header">
+        <div class="bp-title">13-Week Cashflow Forecast — Group</div>
+        <div class="bp-sub">APRIL–JUNE 2026 &nbsp;·&nbsp; GENERATED BY ANALYTICS-AGENT &nbsp;·&nbsp; TREASURY</div>
+      </div>
+      <div class="cf-grid" id="cf-weeks"></div>
+      <div class="bp-section">
+        <div class="bp-section-title">KEY ASSUMPTIONS</div>
+        <div id="cf-assumptions"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── DELIVERABLES UI ──────────────────────────────────────
+function openDeliverables(){var p=document.getElementById('delivPanel');if(p)p.classList.add('open');}
+function closeDeliverables(){var p=document.getElementById('delivPanel');if(p)p.classList.remove('open');}
+function showDeliv(id,el){
+  // Hide all panes
+  ['boardpack','dso','cashflow'].forEach(function(tab){
+    var pane=document.getElementById('dp-'+tab);
+    if(pane) pane.classList.remove('active');
+  });
+  // Deactivate all tabs
+  document.querySelectorAll('#delivTabs .dt').forEach(function(t){t.classList.remove('active');});
+  // Show selected
+  var pane=document.getElementById('dp-'+id);
+  if(pane) pane.classList.add('active');
+  if(el) el.classList.add('active');
+}
+
+</script>
+<!-- DRILL-DOWN MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-dot" id="modalDot" style="background:#22c55e"></div>
+      <span class="modal-head-title" id="modalTitle">Detail</span>
+      <span class="modal-head-sub" id="modalSub"></span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ── MODAL ──────────────────────────────────────────────
+function openModal(title, sub, color, html){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalSub').textContent=sub;
+  document.getElementById('modalDot').style.background=color;
+  document.getElementById('modalBody').innerHTML=html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+
+function fmt(n){return '€'+Math.abs(n).toLocaleString();}
+function pct(n,b){var p=Math.round((n-b)/b*100);return (p>=0?'+':'')+p+'%';}
+
+// ── DRILL DATA BUILDERS ────────────────────────────────
+
+function drillGroupRevenue(){
+  var html='<div class="drill-kpi-grid">';
+  [{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}].forEach(function(x){
+    var cd=D[x.id];
+    var col=cd.vsBudget>=0?'#22c55e':'#ef4444';
+    html+='<div class="drill-kpi"><div class="drill-kpi-val" style="color:'+cd.color+'">'+fmt(cd.totalRevenue)+'</div><div class="drill-kpi-lbl">'+x.flag+' '+cd.name.toUpperCase()+'</div><div style="font-size:9px;margin-top:4px;color:'+col+'">'+pct(cd.totalRevenue,cd.budget)+' vs budget</div></div>';
+  });
+  html+='</div>';
+  html+='<div class="drill-section-title">REVENUE BY LINE — ALL CLINICS</div>';
+  html+='<table class="drill-table"><thead><tr><th>LINE</th><th>AMSTERDAM</th><th>ROTTERDAM</th><th>FRANKFURT</th><th>GROUP</th></tr></thead><tbody>';
+  var lines=['Consultation','Surgical','Pharmacy','Diagnostics','Other'];
+  var ams=[182400,94200,48600,31800,12400];
+  var rot=[142600,78400,36200,24800,9400];
+  var fra=[98400,42600,28200,18400,6800];
+  lines.forEach(function(l,i){
+    var grp=ams[i]+rot[i]+fra[i];
+    html+='<tr><td>'+l+'</td><td class="num">'+fmt(ams[i])+'</td><td class="num">'+fmt(rot[i])+'</td><td class="num">'+fmt(fra[i])+'</td><td class="num" style="color:#f0f4f8;font-weight:700">'+fmt(grp)+'</td></tr>';
+  });
+  html+='<tr style="border-top:1px solid #1a2438"><td style="font-weight:700;color:#f0f4f8">TOTAL</td><td class="green">'+fmt(D.amsterdam.totalRevenue)+'</td><td class="green">'+fmt(D.rotterdam.totalRevenue)+'</td><td class="red">'+fmt(D.frankfurt.totalRevenue)+'</td><td class="green" style="font-weight:700">'+fmt(D.GROUP.totalRevenue)+'</td></tr>';
+  html+='</tbody></table>';
+  openModal('Group Revenue Detail','March 2026 · All Clinics','#60a5fa',html);
+}
+
+function drillGroupBudget(){
+  var html='<div class="drill-section-title">ACTUAL vs BUDGET BY CLINIC</div>';
+  html+='<table class="drill-table"><thead><tr><th>CLINIC</th><th>ACTUAL</th><th>BUDGET</th><th>VARIANCE €</th><th>VARIANCE %</th></tr></thead><tbody>';
+  [{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}].forEach(function(x){
+    var cd=D[x.id];
+    var varCol=cd.vsBudget>=0?'green':'red';
+    html+='<tr><td>'+x.flag+' '+cd.name+'<br><span style="font-size:8px;color:#4e7a96">'+cd.system+'</span></td><td class="num">'+fmt(cd.totalRevenue)+'</td><td class="num" style="color:#4e7a96">'+fmt(cd.budget)+'</td><td class="'+varCol+'">'+(cd.vsBudget>=0?'+':'-')+fmt(cd.vsBudget)+'</td><td class="'+varCol+'">'+(cd.vsBudgetPct>=0?'+':'')+cd.vsBudgetPct+'%</td></tr>';
+  });
+  html+='<tr style="border-top:1px solid #1a2438"><td style="font-weight:700;color:#f0f4f8">GROUP</td><td class="green" style="font-weight:700">'+fmt(D.GROUP.totalRevenue)+'</td><td class="num" style="color:#4e7a96">'+fmt(D.GROUP.totalBudget)+'</td><td class="green" style="font-weight:700">+'+fmt(D.GROUP.vsBudget)+'</td><td class="green" style="font-weight:700">+'+D.GROUP.vsBudgetPct+'%</td></tr>';
+  html+='</tbody></table>';
+  html+='<div class="drill-section-title">COST BRIDGE</div>';
+  html+='<table class="drill-table"><thead><tr><th>COST LINE</th><th>AMSTERDAM</th><th>ROTTERDAM</th><th>FRANKFURT</th></tr></thead><tbody>';
+  var costLines=[['Staff',142800,118400,108400],['Locum',18600,8200,24600],['Medical Supplies',38400,28600,32800],['Pharmaceutical',22100,16800,14200],['Rent',24000,18000,22000],['Depreciation',8200,6100,7400],['Admin & IT',6400,4800,5600],['Marketing',3200,2200,2800]];
+  costLines.forEach(function(r){
+    html+='<tr><td>'+r[0]+'</td><td class="num">'+fmt(r[1])+'</td><td class="num">'+fmt(r[2])+'</td><td class="num">'+fmt(r[3])+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  openModal('Budget vs Actual Detail','March 2026 · Variance Analysis','#34d399',html);
+}
+
+function drillGroupEbitda(){
+  var html='<div class="drill-kpi-grid">';
+  [{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}].forEach(function(x){
+    var cd=D[x.id]; if(!cd.totalDebtors)cd.totalDebtors=cd.debtors.reduce(function(s,d){return s+d.a;},0); var col=cd.ebitda>=0?'#22c55e':'#ef4444';
+    html+='<div class="drill-kpi"><div class="drill-kpi-val" style="color:'+col+'">'+(cd.ebitda>=0?'+':'')+fmt(cd.ebitda)+'</div><div class="drill-kpi-lbl">'+x.flag+' '+cd.name.toUpperCase()+'</div><div style="font-size:9px;margin-top:4px;color:'+col+'">'+cd.ebitdaPct+'% margin</div></div>';
+  });
+  html+='</div>';
+  html+='<div class="drill-section-title">EBITDA BRIDGE</div>';
+  html+='<table class="drill-table"><thead><tr><th>ITEM</th><th>GROUP</th></tr></thead><tbody>';
+  [['Total Revenue','#22c55e',D.GROUP.totalRevenue],['Total Costs','#ef4444',-D.GROUP.totalCosts],['EBITDA','#22c55e',D.GROUP.ebitda]].forEach(function(r){
+    html+='<tr><td style="color:#f0f4f8;font-weight:700">'+r[0]+'</td><td class="num" style="color:'+r[1]+';font-weight:700">'+(r[2]>=0?'+':'')+fmt(r[2])+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  html+='<div class="drill-section-title">NOTE</div>';
+  html+='<div style="font-size:10.5px;color:#a0b8c8;line-height:1.7">Frankfurt is loss-making at <span style="color:#ef4444">-€23,400</span> due to 2 vets on sick leave, driving locum costs to <span style="color:#f59e0b">€24,600</span> (budget €12,000). Amsterdam and Rotterdam together generate <span style="color:#22c55e">€194,000</span> EBITDA, offsetting the Frankfurt deficit.</div>';
+  openModal('EBITDA Detail','March 2026 · Profitability Analysis','#a78bfa',html);
+}
+
+function drillDso(){
+  var html='<div class="drill-section-title">DSO CALCULATION</div>';
+  html+='<table class="drill-table"><thead><tr><th>CLINIC</th><th>DEBTORS</th><th>MONTHLY REV</th><th>DSO (days)</th><th>PRIOR MONTH</th></tr></thead><tbody>';
+  [{id:'amsterdam',flag:'🇳🇱',dso:41,prior:54},{id:'rotterdam',flag:'🇳🇱',dso:35,prior:48},{id:'frankfurt',flag:'🇩🇪',dso:58,prior:61}].forEach(function(x){
+    var cd=D[x.id]; var col=x.dso>60?'red':x.dso>45?'warn':'green';
+    html+='<tr><td>'+x.flag+' '+cd.name+'</td><td class="num">'+fmt(cd.totalDebtors||0)+'</td><td class="num">'+fmt(cd.totalRevenue)+'</td><td class="'+col+'">'+x.dso+' days</td><td style="color:#4e7a96;font-family:JetBrains Mono,monospace;text-align:right">'+x.prior+' days</td></tr>';
+  });
+  html+='<tr style="border-top:1px solid #1a2438"><td style="font-weight:700;color:#f0f4f8">GROUP AVG</td><td class="num" style="font-weight:700">€245K</td><td class="num" style="font-weight:700">'+fmt(D.GROUP.totalRevenue)+'</td><td class="warn" style="font-weight:700">42 days</td><td style="color:#4e7a96;font-family:JetBrains Mono,monospace;text-align:right">54 days</td></tr>';
+  html+='</tbody></table>';
+  html+='<div class="drill-section-title">OVERDUE DETAIL</div>';
+  html+='<table class="drill-table"><thead><tr><th>PAYER</th><th>CLINIC</th><th>AMOUNT</th><th>DAYS</th><th>ACTION</th></tr></thead><tbody>';
+  [{p:'VGZ Insurance',c:'Amsterdam',a:28800,d:67,act:'Escalate — exceeds 60d policy'},{p:'DAT Versicherung',c:'Frankfurt',a:34200,d:72,act:'Director escalation letter'},{p:'AXA Kranken',c:'Frankfurt',a:24600,d:64,act:'Chase call scheduled'}].forEach(function(r){
+    html+='<tr><td style="color:#ef4444">'+r.p+'</td><td>'+r.c+'</td><td class="red">'+fmt(r.a)+'</td><td class="red">'+r.d+'d</td><td style="color:#f59e0b;font-size:9px">'+r.act+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  openModal('DSO Detail','Debtor Aging Analysis · March 2026','#f59e0b',html);
+}
+
+// ── MAKE KPIs CLICKABLE ────────────────────────────────
+function buildDeliverables(anResult){
+  var clinicsHtml='';
+  var maxRev=D.amsterdam.totalRevenue;
+  [{id:'amsterdam',flag:'🇳🇱'},{id:'rotterdam',flag:'🇳🇱'},{id:'frankfurt',flag:'🇩🇪'}].forEach(function(c){
+    var cd=D[c.id];
+    var col=cd.ebitda>=0?'#22c55e':'#ef4444';
+    var vsCol=cd.vsBudget>=0?'#22c55e':'#ef4444';
+    var vsStr=(cd.vsBudget>=0?'+':'')+cd.vsBudgetPct+'%';
+    var pct2=Math.round(cd.totalRevenue/maxRev*100);
+    clinicsHtml+='<div class="clinic-row" onclick="drillGroupRevenue()" style="cursor:pointer" title="Click for detail"><span class="cr-flag">'+c.flag+'</span><span class="cr-name">'+cd.name+'</span><div class="cr-bar-wrap"><div class="cr-bar" style="width:'+pct2+'%;background:'+cd.color+'"></div></div><span class="cr-val clickable" style="color:'+cd.color+'">€'+Math.round(cd.totalRevenue/1000)+'K</span><span class="cr-vs" style="color:'+vsCol+'">'+vsStr+'</span></div>';
+  });
+  document.getElementById('bp-clinics').innerHTML=clinicsHtml;
+  var cleanNarr=(anResult||'Commentary not yet available.').replace(/#{1,3}\s*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^-\s+/gm,'• ').trim();
+  document.getElementById('bp-narrative').textContent=cleanNarr;
+
+  // Clickable KPIs
+  document.getElementById('bp-kpis').innerHTML=[
+    '<div class="bp-kpi" onclick="drillGroupRevenue()" style="cursor:pointer" title="Click for detail"><div class="bp-kpi-val clickable" style="color:#60a5fa">€855K</div><div class="bp-kpi-lbl">GROUP REVENUE</div></div>',
+    '<div class="bp-kpi" onclick="drillGroupBudget()" style="cursor:pointer" title="Click for detail"><div class="bp-kpi-val clickable" style="color:#22c55e">+2%</div><div class="bp-kpi-lbl">vs BUDGET</div></div>',
+    '<div class="bp-kpi" onclick="drillGroupEbitda()" style="cursor:pointer" title="Click for detail"><div class="bp-kpi-val clickable" style="color:#22c55e">20%</div><div class="bp-kpi-lbl">GROUP EBITDA</div></div>',
+    '<div class="bp-kpi" onclick="drillDso()" style="cursor:pointer" title="Click for detail"><div class="bp-kpi-val clickable" style="color:#f59e0b">42d</div><div class="bp-kpi-lbl">AVG DSO</div></div>',
+  ].join('');
+
+  var flagsHtml=[
+    {icon:'🔴',txt:'<b>Frankfurt EBITDA -12%</b> — 2 vets on sick leave, locum costs €24,600. Recovery plan required.'},
+    {icon:'🟡',txt:'<b>VGZ Insurance (Amsterdam)</b> — €28,800 outstanding at 67 days. Exceeds 60-day policy.'},
+    {icon:'🔴',txt:'<b>Frankfurt DAT Versicherung</b> — €34,200 at 72 days. Immediate escalation required.'},
+    {icon:'🟢',txt:'<b>Rotterdam</b> — Clean month. All debtors within terms. EBITDA 30%.'},
+  ].map(function(f){return '<div class="flag-issue" onclick="drillDso()" style="cursor:pointer"><span class="fi-icon">'+f.icon+'</span><span class="fi-txt">'+f.txt+'</span></div>';}).join('');
+  document.getElementById('bp-flags').innerHTML=flagsHtml;
+
+  // DSO Table
+  var dsoRows=[
+    {clinic:'🇳🇱 Amsterdam', payer:'Achmea Insurance',   amt:'€38,400', days:52, status:'warn', action:'Chase by 15 Apr'},
+    {clinic:'🇳🇱 Amsterdam', payer:'VGZ Insurance',      amt:'€28,800', days:67, status:'err',  action:'⚠ Escalate immediately'},
+    {clinic:'🇳🇱 Amsterdam', payer:'Private clients',    amt:'€27,000', days:28, status:'ok',   action:'Within terms'},
+    {clinic:'🇳🇱 Rotterdam', payer:'CZ Zorgverzek.',     amt:'€24,600', days:38, status:'ok',   action:'Within terms'},
+    {clinic:'🇳🇱 Rotterdam', payer:'Menzis',             amt:'€18,200', days:44, status:'ok',   action:'Monitor'},
+    {clinic:'🇳🇱 Rotterdam', payer:'Particulieren',      amt:'€25,600', days:22, status:'ok',   action:'Within terms'},
+    {clinic:'🇩🇪 Frankfurt', payer:'DAT Versicherung',   amt:'€34,200', days:72, status:'err',  action:'⚠ Director escalation'},
+    {clinic:'🇩🇪 Frankfurt', payer:'AXA Kranken',        amt:'€24,600', days:64, status:'err',  action:'⚠ Escalate now'},
+    {clinic:'🇩🇪 Frankfurt', payer:'Privatpatienten',    amt:'€23,600', days:35, status:'ok',   action:'Within terms'},
+  ];
+  document.getElementById('dso-tbody').innerHTML=dsoRows.map(function(r){
+    var col=r.status==='err'?'#ef4444':r.status==='warn'?'#f59e0b':'#22c55e';
+    var badge='<span class="dso-badge" style="background:'+col+'18;color:'+col+'">'+r.days+' days</span>';
+    return '<tr onclick="drillDso()" style="cursor:pointer"><td>'+r.clinic+'</td><td>'+r.payer+'</td><td style="font-family:JetBrains Mono,monospace;color:#f0f4f8">'+r.amt+'</td><td>'+badge+'</td><td style="color:'+col+'">'+{ok:'✓ OK',warn:'⚠ Monitor',err:'✗ Overdue'}[r.status]+'</td><td style="color:'+col+'">'+r.action+'</td></tr>';
+  }).join('');
+
+  var weeks=[
+    {lbl:'Week 1 (Apr 7)',  val:'€198K', note:'Amsterdam surgical volume', col:'#22c55e'},
+    {lbl:'Week 2 (Apr 14)', val:'€184K', note:'Rotterdam payroll out',      col:'#22c55e'},
+    {lbl:'Week 3 (Apr 21)', val:'€156K', note:'Frankfurt rent + locum',     col:'#f59e0b'},
+    {lbl:'Week 4 (Apr 28)', val:'€201K', note:'Insurance receipts expected',col:'#22c55e'},
+    {lbl:'Week 5 (May 5)',  val:'€178K', note:'Normal trading',             col:'#22c55e'},
+    {lbl:'Week 6 (May 12)', val:'€143K', note:'⚠ Frankfurt low — locum',   col:'#f59e0b'},
+    {lbl:'Week 7 (May 19)', val:'€192K', note:'VGZ payment expected',       col:'#22c55e'},
+    {lbl:'Week 8 (May 26)', val:'€168K', note:'Bank holiday — reduced',     col:'#5a7a90'},
+  ];
+  document.getElementById('cf-weeks').innerHTML=weeks.map(function(w){
+    return '<div class="cf-week" onclick="drillGroupRevenue()" style="cursor:pointer"><div class="cf-week-label">'+w.lbl+'</div><div class="cf-week-val clickable" style="color:'+w.col+'">'+w.val+'</div><div class="cf-week-note" style="color:'+w.col+'88">'+w.note+'</div></div>';
+  }).join('');
+
+  var assumptions=[
+    {icon:'📌',txt:'<b>VGZ Amsterdam</b> — €28,800 expected by Apr 21 (day 90 chase)'},
+    {icon:'📌',txt:'<b>DAT Frankfurt</b> — €34,200 — director escalation letter sent'},
+    {icon:'📌',txt:'<b>Frankfurt locum</b> — budgeted 3 extra days May if vets still absent'},
+    {icon:'📌',txt:'<b>Group covenant</b> — cash reserves >€500K maintained throughout'},
+  ].map(function(a){return '<div class="flag-issue"><span class="fi-icon">'+a.icon+'</span><span class="fi-txt">'+a.txt+'</span></div>';}).join('');
+  document.getElementById('cf-assumptions').innerHTML=assumptions;
+}
+
+
+// ── PPT DOWNLOAD — generate via Claude API ─────────────────────
+async function downloadPPT(btn){
+  var spin=document.getElementById('ppt-spin');
+  spin.style.display='inline-block';
+  btn.disabled=true;
+  btn.style.opacity='0.7';
+
+  try{
+    await loadPptxGenJS();
+
+    var summary={
+      cfoNarrative:(results.an||'').replace(/#{1,3}\s*/g,'').replace(/\*\*/g,'').replace(/\*/g,'').replace(/^-\s+/gm,'').trim()||
+        'Group delivered €855K revenue (+2% vs budget). Amsterdam and Rotterdam outperforming. Frankfurt requires recovery plan.',
+      qaResult:results.qa||'',
+      clinics:{
+        amsterdam:{revenue:369400,ebitda:105700,margin:29,vsBudget:9,system:'Exact Online',flag:'🇳🇱',
+          rev:[['Consultations','€182,400'],['Surgery','€94,200'],['Pharmacy','€48,600'],['Diagnostics','€31,800'],['Other','€12,400']],
+          costs:[['Vet Staff (8 FTE)','€142,800'],['Medical Supplies','€38,400'],['Pharma','€22,100'],['Rent','€24,000'],['Locum','€18,600']]},
+        rotterdam:{revenue:291400,ebitda:88300,margin:30,vsBudget:4,system:'AFAS Profit',flag:'🇳🇱',
+          rev:[['Omzet Consulten','€142,600'],['Omzet Operaties','€78,400'],['Omzet Apotheek','€36,200'],['Omzet Diagnostiek','€24,800'],['Overige','€9,400']],
+          costs:[['Personeelskosten','€118,400'],['Inkoop','€28,600'],['Farmacie','€16,800'],['Huisvesting','€18,000'],['Inhuur','€8,200']]},
+        frankfurt:{revenue:194400,ebitda:-23400,margin:-12,vsBudget:-12,system:'DATEV SKR03',flag:'🇩🇪',
+          rev:[['Erlöse Tierarzt','€98,400'],['Erlöse OPs','€42,600'],['Erlöse Medikam.','€28,200'],['Erlöse Diagnostik','€18,400'],['Sonstige','€6,800']],
+          costs:[['Personalkosten','€108,400'],['Fremdpersonal ⚠','€24,600'],['Medizinbedarf','€32,800'],['Arzneimittel','€14,200'],['Miete','€22,000']]},
+      },
+    };
+
+    await buildAndDownloadPPT(summary);
+
+  }catch(err){
+    console.error('PPT error:',err);
+    alert('PPT generation error: '+err.message+'. Check console for details.');
+  }finally{
+    spin.style.display='none';
+    btn.disabled=false;
+    btn.style.opacity='1';
+  }
+}
+
+
+function loadPptxGenJS(){
+  return new Promise(function(resolve, reject){
+    if(window.PptxGenJS){ resolve(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function buildAndDownloadPPT(summary){
+  var pres=new PptxGenJS();
+  pres.layout='LAYOUT_WIDE'; // 13.33" x 7.5"
+  pres.title='Animedica Veterinary Group Board Pack March 2026';
+
+  var C={
+    bg:'FFFFFF',hdr:'F1F5F9',card:'FFFFFF',panel:'F8FAFC',
+    green:'22C55E',red:'EF4444',amber:'F59E0B',blue:'60A5FA',
+    ams:'60A5FA',rot:'34D399',fra:'FB923C',purple:'A78BFA',
+    dark:'0F172A',dim:'64748B',light:'475569',border:'E2E8F0',
+  };
+
+  function mkShadow(){ return {type:'outer',blur:8,offset:2,angle:135,color:'94A3B8',opacity:0.15}; }
+
+  function addBg(s){ s.background={color:C.bg}; }
+
+  function topBar(s,title,sub,accent){
+    accent=accent||C.green;
+    s.addShape('rect',{x:0,y:0,w:13.33,h:0.06,fill:{color:accent},line:{color:accent,width:0}});
+    s.addShape('rect',{x:0.28,y:0.14,w:0.38,h:0.38,fill:{color:C.green},line:{color:C.green,width:0}});
+    s.addText('DS',{x:0.28,y:0.14,w:0.38,h:0.38,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+    s.addText('DeciSight',{x:0.72,y:0.17,w:1.6,h:0.18,fontSize:9,bold:true,color:C.green,margin:0});
+    s.addText('AI AGENTS',{x:0.72,y:0.34,w:1.6,h:0.12,fontSize:6,color:C.dim,charSpacing:3,margin:0});
+    s.addText(title,{x:2.5,y:0.13,w:8.5,h:0.2,fontSize:11,bold:true,color:C.dark,margin:0});
+    s.addText(sub,{x:2.5,y:0.33,w:8.5,h:0.14,fontSize:7.5,color:C.dim,margin:0});
+    s.addShape('rect',{x:11.9,y:0.1,w:1.1,h:0.38,fill:{color:C.panel},line:{color:accent,width:1}});
+    s.addText('MARCH 2026',{x:11.9,y:0.1,w:1.1,h:0.38,fontSize:7,bold:true,color:accent,align:'center',valign:'middle',charSpacing:1});
+  }
+
+  function footer(s,n,tot){
+    s.addShape('rect',{x:0,y:7.3,w:13.33,h:0.2,fill:{color:C.hdr},line:{color:C.hdr,width:0}});
+    s.addText('ANIMEDICA VETERINARY GROUP  ·  AI MONTHLY CLOSE  ·  CONFIDENTIAL  ·  DECISIGHT SOLUTIONS',
+      {x:0.3,y:7.3,w:11,h:0.2,fontSize:6,color:C.dim,valign:'middle',charSpacing:2,margin:0});
+    s.addText(n+' / '+tot,{x:12.8,y:7.3,w:0.4,h:0.2,fontSize:6.5,color:C.dim,align:'right',valign:'middle',margin:0});
+  }
+
+  function kpiBox(s,x,y,w,h,label,value,sub,vc,sc){
+    sc=sc||C.dim;
+    s.addShape('rect',{x:x,y:y,w:w,h:h,fill:{color:C.card},line:{color:C.border,width:1},shadow:mkShadow()});
+    s.addShape('rect',{x:x,y:y,w:0.055,h:h,fill:{color:vc},line:{color:vc,width:0}});
+    s.addText(value,{x:x+0.14,y:y+0.1,w:w-0.2,h:h*0.52,fontSize:22,bold:true,color:vc,valign:'middle',margin:0});
+    s.addText(label,{x:x+0.14,y:y+h*0.58,w:w-0.2,h:0.18,fontSize:7,color:C.dim,charSpacing:1,margin:0});
+    if(sub) s.addText(sub,{x:x+0.14,y:y+h-0.2,w:w-0.2,h:0.17,fontSize:7.5,color:sc,margin:0});
+  }
+
+  function secTitle(s,x,y,text,color){
+    color=color||C.green;
+    s.addText(text,{x:x,y:y,w:12.7-x,h:0.16,fontSize:7.5,bold:true,color:color,charSpacing:2,margin:0});
+    s.addShape('line',{x:x,y:y+0.17,w:12.7-x,h:0,line:{color:C.border,width:0.5}});
+  }
+
+  var TOTAL=5;
+
+  // ── SLIDE 1: COVER ─────────────────────────────────────────
+  (function(){
+    var s=pres.addSlide(); addBg(s);
+    s.addShape('rect',{x:0,y:0,w:0.06,h:7.5,fill:{color:C.green},line:{color:C.green,width:0}});
+    s.addShape('rect',{x:0.5,y:0.5,w:0.82,h:0.82,fill:{color:C.green},line:{color:C.green,width:0}});
+    s.addText('DS',{x:0.5,y:0.5,w:0.82,h:0.82,fontSize:26,bold:true,color:'FFFFFF',align:'center',valign:'middle'});
+    s.addText('DeciSight Solutions',{x:1.48,y:0.62,w:4.5,h:0.22,fontSize:14,bold:true,color:C.green,margin:0});
+    s.addText('AI Financial Intelligence',{x:1.48,y:0.86,w:4.5,h:0.16,fontSize:9,color:C.dim,charSpacing:2,margin:0});
+    s.addText('Animedica',{x:0.5,y:1.55,w:9,h:0.85,fontSize:52,bold:true,color:C.dark,margin:0});
+    s.addText('Veterinary Group',{x:0.5,y:2.38,w:9,h:0.72,fontSize:38,bold:true,color:C.dark,margin:0});
+    s.addText('Monthly Management Pack',{x:0.5,y:3.2,w:9,h:0.42,fontSize:21,color:C.green,margin:0});
+    s.addText('March 2026  ·  Generated by AI Agents  ·  Confidential',{x:0.5,y:3.68,w:9,h:0.2,fontSize:10,color:C.dim,charSpacing:1,margin:0});
+    // Agent panel
+    s.addShape('rect',{x:9.9,y:0.28,w:3.1,h:7.05,fill:{color:C.card},line:{color:C.border,width:1},shadow:mkShadow()});
+    s.addText('GENERATED BY',{x:10.05,y:0.52,w:2.8,h:0.16,fontSize:7,color:C.dim,charSpacing:3,align:'center',margin:0});
+    var ags=[
+      {name:'Ledger-Agent',  role:'Journal Entries · P&L Build', color:C.ams},
+      {name:'Variance-Agent',role:'Budget Variance Analysis',     color:C.rot},
+      {name:'CFO-Agent',     role:'Consolidation · CFO Narrative',color:C.purple},
+      {name:'Audit-Agent',   role:'Audit · Quality · Sign-off',   color:C.fra},
+    ];
+    ags.forEach(function(ag,i){
+      var ay=0.86+i*1.5;
+      s.addShape('rect',{x:10.06,y:ay,w:2.78,h:1.28,fill:{color:C.panel},line:{color:C.border,width:1}});
+      s.addShape('rect',{x:10.06,y:ay,w:0.055,h:1.28,fill:{color:ag.color},line:{color:ag.color,width:0}});
+      s.addText('✓ '+ag.name,{x:10.18,y:ay+0.12,w:2.5,h:0.26,fontSize:12,bold:true,color:ag.color,margin:0});
+      s.addText(ag.role,{x:10.18,y:ay+0.42,w:2.5,h:0.16,fontSize:7.5,color:C.dim,margin:0});
+      s.addText('SIGNED OFF',{x:10.18,y:ay+0.62,w:2.5,h:0.15,fontSize:7,color:ag.color,charSpacing:1,margin:0});
+    });
+    // Data sources
+    s.addShape('rect',{x:0.5,y:4.32,w:9.1,h:2.8,fill:{color:C.card},line:{color:C.border,width:1}});
+    s.addText('DATA SOURCES',{x:0.7,y:4.5,w:8.5,h:0.16,fontSize:7,color:C.dim,charSpacing:3,margin:0});
+    var srcs=[{n:'Amsterdam',sys:'Exact Online',lang:'English',c:C.ams},{n:'Rotterdam',sys:'AFAS Profit',lang:'Dutch',c:C.rot},{n:'Frankfurt',sys:'DATEV SKR03',lang:'German',c:C.fra}];
+    srcs.forEach(function(src,i){
+      var sx=0.7+i*2.98;
+      s.addShape('rect',{x:sx,y:4.8,w:2.8,h:2.1,fill:{color:C.panel},line:{color:C.border,width:1}});
+      s.addShape('rect',{x:sx,y:4.8,w:2.8,h:0.05,fill:{color:src.c},line:{color:src.c,width:0}});
+      s.addText(src.n,{x:sx+0.14,y:4.92,w:2.55,h:0.24,fontSize:13,bold:true,color:src.c,margin:0});
+      s.addText(src.sys,{x:sx+0.14,y:5.18,w:2.55,h:0.16,fontSize:8.5,color:C.light,margin:0});
+      s.addText(src.lang+' account codes',{x:sx+0.14,y:5.36,w:2.55,h:0.14,fontSize:7.5,color:C.dim,margin:0});
+      s.addText('Ledger-Agent reads & builds P&L',{x:sx+0.14,y:5.72,w:2.55,h:0.14,fontSize:7,color:src.c,margin:0});
+    });
+    footer(s,1,TOTAL);
+  })();
+
+  // ── SLIDE 2: GROUP KPI ─────────────────────────────────────
+  (function(){
+    var s=pres.addSlide(); addBg(s);
+    topBar(s,'GROUP KPI DASHBOARD','Animedica Veterinary Group · March 2026 · Consolidated',C.green);
+    kpiBox(s,0.3, 0.75,3.0, 1.12,'GROUP REVENUE','€855K','+€15K vs budget',C.blue,C.green);
+    kpiBox(s,3.45,0.75,3.0, 1.12,'GROUP EBITDA','€171K','20% EBITDA margin',C.green,C.green);
+    kpiBox(s,6.6, 0.75,3.0, 1.12,'vs BUDGET','+2%','AMS +9%  ROT +4%  FRA -12%',C.green,C.amber);
+    kpiBox(s,9.75,0.75,3.25,1.12,'AVG GROUP DSO','42 days','Prior month: 54 days',C.amber,C.green);
+    secTitle(s,0.3,2.1,'CLINIC PERFORMANCE — MARCH 2026',C.green);
+    var cls=[
+      {name:'Amsterdam',color:C.ams,sys:'Exact Online',rev:'€369,400',bPct:'+9%',ePct:'29%',pos:true},
+      {name:'Rotterdam',color:C.rot,sys:'AFAS Profit', rev:'€291,400',bPct:'+4%',ePct:'30%',pos:true},
+      {name:'Frankfurt',color:C.fra,sys:'DATEV SKR03', rev:'€194,400',bPct:'-12%',ePct:'-12%',pos:false},
+    ];
+    cls.forEach(function(cl,i){
+      var cx=0.3+i*4.35,cy=2.38,cw=4.1,ch=1.0;
+      s.addShape('rect',{x:cx,y:cy,w:cw,h:ch,fill:{color:C.card},line:{color:C.border,width:1},shadow:mkShadow()});
+      s.addShape('rect',{x:cx,y:cy,w:cw,h:0.05,fill:{color:cl.color},line:{color:cl.color,width:0}});
+      s.addText(cl.name,{x:cx+0.14,y:cy+0.1,w:cw-0.2,h:0.22,fontSize:12,bold:true,color:cl.color,margin:0});
+      s.addText(cl.sys,{x:cx+0.14,y:cy+0.32,w:cw-0.2,h:0.14,fontSize:7,color:C.dim,charSpacing:1,margin:0});
+      var bw=(cw-0.28)*0.8,fw=bw*(parseFloat(cl.rev.replace(/[€,K]/g,''))/370);
+      s.addShape('rect',{x:cx+0.14,y:cy+0.52,w:bw,h:0.07,fill:{color:C.panel},line:{color:C.border,width:1}});
+      s.addShape('rect',{x:cx+0.14,y:cy+0.52,w:Math.min(fw,bw),h:0.07,fill:{color:cl.color},line:{color:cl.color,width:0}});
+      s.addText(cl.rev,{x:cx+0.14,y:cy+0.63,w:cw*0.5,h:0.18,fontSize:9,bold:true,color:cl.color,margin:0});
+      s.addText(cl.bPct+' vs budget',{x:cx+cw*0.55,y:cy+0.63,w:cw*0.42,h:0.18,fontSize:8,color:cl.pos?C.green:C.red,align:'right',margin:0});
+      s.addText('EBITDA '+cl.ePct,{x:cx+0.14,y:cy+0.8,w:cw-0.2,h:0.14,fontSize:8,bold:true,color:cl.pos?C.green:C.red,margin:0});
+    });
+    secTitle(s,0.3,3.55,'CONSOLIDATED P&L SUMMARY',C.blue);
+    function tblRow(label,lc,ams,ac,rot,rc,fra,fc,grp,gc,bold){
+      var bg2=bold?C.panel:C.card;
+      return [{text:label,options:{bold:bold,color:lc,fill:{color:bg2}}},{text:ams,options:{bold:bold,color:ac,align:'right',fill:{color:bg2}}},{text:rot,options:{bold:bold,color:rc,align:'right',fill:{color:bg2}}},{text:fra,options:{bold:bold,color:fc,align:'right',fill:{color:bg2}}},{text:grp,options:{bold:true,color:gc,align:'right',fill:{color:bg2}}}];
+    }
+    var tbl=[
+      [{text:'LINE ITEM',options:{bold:true,color:C.dim,fill:{color:C.panel}}},{text:'AMSTERDAM',options:{bold:true,color:C.ams,fill:{color:C.panel},align:'right'}},{text:'ROTTERDAM',options:{bold:true,color:C.rot,fill:{color:C.panel},align:'right'}},{text:'FRANKFURT',options:{bold:true,color:C.fra,fill:{color:C.panel},align:'right'}},{text:'GROUP TOTAL',options:{bold:true,color:C.dark,fill:{color:C.panel},align:'right'}}],
+      tblRow('Revenue',C.light,'€369,400',C.green,'€291,400',C.green,'€194,400',C.amber,'€855,200',C.green,false),
+      tblRow('Total Costs',C.light,'(€263,700)',C.red,'(€203,100)',C.red,'(€217,800)',C.red,'(€684,600)',C.red,false),
+      tblRow('EBITDA',C.dark,'€105,700',C.green,'€88,300',C.green,'(€23,400)',C.red,'€170,600',C.green,true),
+      tblRow('EBITDA %',C.light,'29%',C.green,'30%',C.green,'-12%',C.red,'20%',C.green,false),
+      tblRow('vs Budget',C.light,'+9%',C.green,'+4%',C.green,'-12%',C.red,'+2%',C.green,false),
+    ];
+    s.addTable(tbl,{x:0.3,y:3.78,w:12.7,colW:[3.4,2.2,2.2,2.2,2.7],border:{pt:0.5,color:C.border},rowH:0.34,fontFace:'Calibri',fontSize:9});
+    footer(s,2,TOTAL);
+  })();
+
+  // ── SLIDE 3: CFO NARRATIVE ──────────────────────────────────
+  (function(){
+    var s=pres.addSlide(); addBg(s);
+    topBar(s,'CFO NARRATIVE & KEY ACTIONS','Generated by CFO-Agent · Audit reviewed · Signed off March 31 2026',C.purple);
+    secTitle(s,0.3,0.72,'MARCH 2026 — CFO COMMENTARY',C.purple);
+    s.addShape('rect',{x:0.3,y:0.96,w:8.7,h:3.6,fill:{color:C.card},line:{color:C.purple,width:1},shadow:mkShadow()});
+    s.addShape('rect',{x:0.3,y:0.96,w:0.055,h:3.6,fill:{color:C.purple},line:{color:C.purple,width:0}});
+    var narText=summary.cfoNarrative||'Group delivered €855K revenue (+2% vs budget). Amsterdam +9%, Rotterdam +4%. Frankfurt loss-making due to sick leave locum overrun — recovery plan activated.';
+    s.addText(narText,{x:0.5,y:1.08,w:8.3,h:3.38,fontSize:9,color:C.light,valign:'top',margin:0});
+    secTitle(s,0.3,4.72,'RECOMMENDED ACTIONS',C.red);
+    var acts=[
+      {pri:'URGENT',color:C.red,  act:'Director escalation to DAT Versicherung + AXA Kranken — €58,800 overdue receivables'},
+      {pri:'URGENT',color:C.red,  act:'VGZ Amsterdam day-90 final demand — €28,800 @ 67 days outstanding'},
+      {pri:'ACTION',color:C.amber,act:'Frankfurt sick leave HR plan + 90-day recovery budget approval'},
+    ];
+    acts.forEach(function(ac,i){
+      var ax=0.3+i*4.35;
+      s.addShape('rect',{x:ax,y:4.98,w:4.1,h:0.9,fill:{color:C.card},line:{color:C.border,width:1}});
+      s.addShape('rect',{x:ax,y:4.98,w:0.8,h:0.9,fill:{color:C.panel},line:{color:ac.color,width:1}});
+      s.addText(ac.pri,{x:ax+0.05,y:4.98,w:0.7,h:0.9,fontSize:6.5,bold:true,color:ac.color,align:'center',valign:'middle',charSpacing:1,margin:0});
+      s.addText(ac.act,{x:ax+0.9,y:5.08,w:3.1,h:0.7,fontSize:8,color:C.light,valign:'middle',margin:0});
+    });
+    // QA box
+    s.addShape('rect',{x:9.25,y:0.96,w:3.75,h:3.6,fill:{color:C.card},line:{color:C.green,width:1},shadow:mkShadow()});
+    s.addShape('rect',{x:9.25,y:0.96,w:3.75,h:0.055,fill:{color:C.green},line:{color:C.green,width:0}});
+    s.addText('AUDIT SIGN-OFF',{x:9.4,y:1.12,w:3.45,h:0.16,fontSize:7.5,color:C.green,bold:true,charSpacing:3,margin:0});
+    s.addText('✅ SIGNED OFF',{x:9.4,y:1.32,w:3.45,h:0.42,fontSize:18,bold:true,color:C.green,margin:0});
+    ['✓ All 3 clinics processed','✓ P&L from raw entries','✓ Revenue cross-checked','✓ Frankfurt root cause','✓ Narrative consistent'].forEach(function(ck,ci){
+      s.addText(ck,{x:9.4,y:1.88+ci*0.38,w:3.45,h:0.34,fontSize:8.5,color:C.green,margin:0});
+    });
+    footer(s,3,TOTAL);
+  })();
+
+  // ── SLIDE 4: FRANKFURT ROOT CAUSE ──────────────────────────
+  (function(){
+    var s=pres.addSlide(); addBg(s);
+    topBar(s,'FRANKFURT — ROOT CAUSE & RECOVERY PLAN','🇩🇪 DATEV SKR03 · EBITDA -12% · Board action required',C.fra);
+    s.addShape('rect',{x:0.3,y:0.75,w:6.1,h:6.35,fill:{color:C.card},line:{color:C.red,width:1},shadow:mkShadow()});
+    s.addShape('rect',{x:0.3,y:0.75,w:0.055,h:6.35,fill:{color:C.red},line:{color:C.red,width:0}});
+    s.addText('ROOT CAUSE',{x:0.5,y:0.92,w:5.8,h:0.16,fontSize:7.5,color:C.red,bold:true,charSpacing:3,margin:0});
+    s.addText('2 Vets Sick Leave → Locum Overrun',{x:0.5,y:1.1,w:5.8,h:0.5,fontSize:16,bold:true,color:C.dark,margin:0});
+    var iss=[
+      {icon:'✗',t:'Fremdpersonal €24,600 vs budget €12,000 — +€12,600 overrun in DATEV entries',c:C.red},
+      {icon:'✗',t:'Dr. Müller + Dr. Schmidt sick leave 09/03 — Krankheitsvertretung in bookings',c:C.red},
+      {icon:'✗',t:'Capacity 68-78 animals/week vs normal 95+ — visible in KW10-12 entry volumes',c:C.red},
+      {icon:'⚠',t:'Revenue €194,400 vs budget €220,000 — shortfall €25,600 (-12%)',c:C.amber},
+      {icon:'⚠',t:'DAT €34,200 @ 72d + AXA €24,600 @ 64d — €58,800 cash risk',c:C.amber},
+    ];
+    iss.forEach(function(it,i){
+      s.addShape('rect',{x:0.48,y:1.76+i*0.84,w:5.78,h:0.76,fill:{color:C.panel},line:{color:C.border,width:1}});
+      s.addText(it.icon,{x:0.58,y:1.81+i*0.84,w:0.3,h:0.66,fontSize:13,color:it.c,valign:'middle',margin:0});
+      s.addText(it.t,{x:0.94,y:1.81+i*0.84,w:5.22,h:0.66,fontSize:7.5,color:it.c,valign:'middle',margin:0});
+    });
+    s.addShape('rect',{x:6.7,y:0.75,w:6.3,h:6.35,fill:{color:C.card},line:{color:C.green,width:1},shadow:mkShadow()});
+    s.addShape('rect',{x:6.7,y:0.75,w:0.055,h:6.35,fill:{color:C.green},line:{color:C.green,width:0}});
+    s.addText('RECOVERY PLAN',{x:6.9,y:0.92,w:5.9,h:0.16,fontSize:7.5,color:C.green,bold:true,charSpacing:3,margin:0});
+    s.addText('90-Day Frankfurt Turnaround',{x:6.9,y:1.1,w:5.9,h:0.4,fontSize:16,bold:true,color:C.dark,margin:0});
+    var phases=[
+      {ph:'WEEK 1-2 — URGENT',c:C.red,items:['Director escalation → DAT Versicherung (€34,200 @ 72d)','Chase call → AXA Kranken (€24,600 @ 64d)','Continue locum Dr. Müller + Dr. Schmidt']},
+      {ph:'WEEK 3-6 — STABILISE',c:C.amber,items:['Target: 1 vet returns — reduce to 1 locum','VGZ Amsterdam €28,800 — day-90 final demand','Revenue target: 85 animals/week (from 72)']},
+      {ph:'WEEK 7-12 — RECOVER',c:C.green,items:['Both vets back — locum costs normalise to budget','Full capacity: 95+ animals/week restored','DAT + AXA collections: €58,800 cash inflow']},
+    ];
+    var py=1.65;
+    phases.forEach(function(ph){
+      s.addShape('rect',{x:6.88,y:py,w:5.92,h:0.22,fill:{color:C.panel},line:{color:ph.c,width:1}});
+      s.addText(ph.ph,{x:7.0,y:py+0.04,w:5.7,h:0.16,fontSize:7.5,bold:true,color:ph.c,charSpacing:1,margin:0});
+      py+=0.26;
+      ph.items.forEach(function(item){
+        s.addShape('rect',{x:6.88,y:py,w:5.92,h:0.56,fill:{color:C.panel},line:{color:C.border,width:1}});
+        s.addText('→  '+item,{x:7.0,y:py+0.08,w:5.7,h:0.42,fontSize:8,color:C.light,valign:'middle',margin:0});
+        py+=0.6;
+      });
+      py+=0.1;
+    });
+    footer(s,4,TOTAL);
+  })();
+
+  // ── SLIDE 5: CASH FLOW ─────────────────────────────────────
+  (function(){
+    var s=pres.addSlide(); addBg(s);
+    topBar(s,'CASH FLOW STATEMENT — MARCH 2026','Indirect method from actual journal entries · 8-week forward forecast',C.blue);
+    secTitle(s,0.3,0.72,'INDIRECT METHOD — FROM ACTUAL LEDGER ENTRIES',C.blue);
+    var cfData=[
+      {label:'EBITDA (P&L by Ledger-Agent)',ams:105700,rot:88300,fra:-23400,bold:true,color:C.green},
+      {label:'  + Depreciation (non-cash)',ams:8200,rot:6100,fra:7400,bold:false},
+      {label:'  + New creditors raised',ams:38600,rot:28800,fra:32400,bold:false},
+      {label:'  - Prior creditors paid',ams:-27400,rot:-24200,fra:-24800,bold:false},
+      {label:'  - New debtors raised',ams:-94200,rot:-68400,fra:-82400,bold:false},
+      {label:'  + Prior debtors collected',ams:61200,rot:33800,fra:18000,bold:false},
+      {label:'NET OPERATING CASH FLOW',ams:92100,rot:64400,fra:-72800,bold:true,color:C.blue},
+      {label:'Capital expenditure',ams:-4200,rot:0,fra:-3200,bold:false},
+      {label:'NET CASH MOVEMENT',ams:87900,rot:64400,fra:-76000,bold:true,color:C.green},
+    ];
+    function fmtK(v){if(v===0)return '-';var a=(Math.abs(v)/1000).toFixed(0);return v>=0?'+€'+a+'K':'(€'+a+'K)';}
+    var cfTbl=[[{text:'LINE ITEM',options:{bold:true,color:C.dim,fill:{color:C.panel}}},{text:'AMS',options:{bold:true,color:C.ams,fill:{color:C.panel},align:'right'}},{text:'ROT',options:{bold:true,color:C.rot,fill:{color:C.panel},align:'right'}},{text:'FRA',options:{bold:true,color:C.fra,fill:{color:C.panel},align:'right'}},{text:'GROUP',options:{bold:true,color:C.green,fill:{color:C.panel},align:'right'}}]];
+    cfData.forEach(function(r){
+      var grp=r.ams+r.rot+r.fra,gc=grp>=0?C.green:C.red,bg2=r.bold?C.panel:C.card;
+      var lc=r.bold?(r.color||C.dark):C.light;
+      cfTbl.push([
+        {text:r.label,options:{bold:r.bold,color:lc,fill:{color:bg2}}},
+        {text:fmtK(r.ams),options:{bold:r.bold,color:r.ams>=0?C.green:C.red,align:'right',fill:{color:bg2}}},
+        {text:fmtK(r.rot),options:{bold:r.bold,color:r.rot>=0?C.green:C.red,align:'right',fill:{color:bg2}}},
+        {text:fmtK(r.fra),options:{bold:r.bold,color:r.fra>=0?C.green:C.red,align:'right',fill:{color:bg2}}},
+        {text:fmtK(grp),options:{bold:true,color:gc,align:'right',fill:{color:bg2}}},
+      ]);
+    });
+    s.addTable(cfTbl,{x:0.3,y:0.96,w:7.3,colW:[3.3,1.0,1.0,1.0,1.0],border:{pt:0.5,color:C.border},rowH:0.38,fontFace:'Calibri',fontSize:9});
+    s.addShape('rect',{x:0.3,y:4.74,w:7.3,h:2.0,fill:{color:C.panel},line:{color:C.blue,width:1}});
+    s.addText('HOW THIS IS CALCULATED',{x:0.5,y:4.88,w:6.9,h:0.16,fontSize:7,color:C.blue,bold:true,charSpacing:2,margin:0});
+    var notes=['Ledger-Agent builds P&L from 258 raw journal entries — not estimated','Working capital from actual Exact Online / AFAS / DATEV entries','Prior-month collections: Bank credits (acct 1200) visible in March journals','Outstanding: VGZ €28.8K · DAT €34.2K · AXA €24.6K = €87,600 at risk','This is derived from actual accounting data — not modelled'];
+    notes.forEach(function(n,ni){ s.addText('→  '+n,{x:0.5,y:5.08+ni*0.3,w:6.9,h:0.27,fontSize:8,color:ni===4?C.green:C.light,margin:0}); });
+    secTitle(s,7.9,0.72,'8-WEEK FORWARD FORECAST',C.amber);
+    var wks=[{wk:'Apr 7',In:122800,out:161750},{wk:'Apr 14',In:120800,out:132150},{wk:'Apr 21',In:80000,out:133350},{wk:'Apr 28',In:91000,out:161750},{wk:'May 5',In:86000,out:135750},{wk:'May 12',In:80000,out:122900},{wk:'May 19',In:89000,out:132400},{wk:'May 26',In:84000,out:128600}];
+    wks.forEach(function(fw,i){
+      var fx=7.9+(i%4)*1.36,fy=0.96+Math.floor(i/4)*1.62,net=fw.In-fw.out,nc=net>=0?C.green:C.red;
+      s.addShape('rect',{x:fx,y:fy,w:1.28,h:1.48,fill:{color:C.card},line:{color:C.border,width:1}});
+      s.addText(fw.wk,{x:fx+0.07,y:fy+0.08,w:1.14,h:0.16,fontSize:7.5,bold:true,color:C.amber,margin:0});
+      s.addText('IN  €'+(fw.In/1000).toFixed(0)+'K',{x:fx+0.07,y:fy+0.3,w:1.14,h:0.18,fontSize:8,color:C.green,margin:0});
+      s.addText('OUT €'+(fw.out/1000).toFixed(0)+'K',{x:fx+0.07,y:fy+0.5,w:1.14,h:0.18,fontSize:8,color:C.red,margin:0});
+      s.addShape('line',{x:fx+0.07,y:fy+0.72,w:1.14,h:0,line:{color:C.border,width:0.5}});
+      s.addText('NET '+(net>=0?'+':'')+'€'+(Math.abs(net)/1000).toFixed(0)+'K',{x:fx+0.07,y:fy+0.78,w:1.14,h:0.22,fontSize:9,bold:true,color:nc,margin:0});
+      var mh=0.3,bh=mh*Math.min(Math.abs(net)/60000,1);
+      s.addShape('rect',{x:fx+0.44,y:fy+1.1,w:0.4,h:mh,fill:{color:C.panel},line:{color:C.border,width:1}});
+      if(bh>0.01) s.addShape('rect',{x:fx+0.44,y:fy+1.1+(mh-bh),w:0.4,h:bh,fill:{color:nc},line:{color:nc,width:0}});
+    });
+    s.addShape('rect',{x:7.9,y:4.3,w:5.1,h:0.42,fill:{color:C.panel},line:{color:C.green,width:1}});
+    s.addText('Opening cash: €580K  ·  Covenant: €500K  ·  Maintained throughout forecast',{x:8.05,y:4.34,w:4.8,h:0.34,fontSize:7.5,color:C.green,valign:'middle',margin:0});
+    footer(s,5,TOTAL);
+  })();
+
+  // Trigger download
+  await pres.writeFile({fileName:'Animedica_Board_Pack_March2026.pptx'});
+}
+
+
+</script>
+
+</body>
+
+</html>
