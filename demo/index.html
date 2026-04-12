@@ -27,8 +27,8 @@ canvas{display:block;position:fixed;top:46px;left:0;width:100%;height:calc(100vh
 .bsm svg{width:13px;height:13px;stroke:#6a8898;stroke-width:1.8;fill:none;stroke-linecap:round}
 .bsm.muted{border-color:rgba(239,68,68,.3)}
 .prog{display:flex;align-items:center;gap:8px}
-.pbar{width:100px;height:3px;background:#1a2438;border-radius:2px;overflow:hidden}
-.pfill{height:100%;background:#22c55e;width:0%;transition:width .4s}
+.pbar{width:180px;height:6px;background:#1a2438;border-radius:3px;overflow:hidden;cursor:pointer;position:relative}.pbar:hover{height:8px;margin:-1px 0}
+.pfill{height:100%;background:#22c55e;width:0%;transition:width .3s;pointer-events:none}
 .pct{font-family:'DM Mono',monospace;font-size:10px;color:#22c55e;min-width:26px}
 .fcta{background:#22c55e;color:#09090b;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:6px 14px;border-radius:6px;text-decoration:none;opacity:0;pointer-events:none;transition:opacity .5s}
 .fcta.show{opacity:1;pointer-events:auto}
@@ -135,7 +135,7 @@ canvas{display:block;position:fixed;top:46px;left:0;width:100%;height:calc(100vh
     <div id="btnEL" style="font-size:8px;font-family:DM Mono,monospace;color:#384858;padding:0 8px;border-radius:6px;border:1px solid #1a2438;height:32px;display:flex;align-items:center;gap:4px"><span id="voiceStatus" style="width:6px;height:6px;border-radius:50%;background:#384858;display:inline-block"></span><span id="voiceLabel">Voice</span></div>
   </div>
   <div class="prog">
-    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <div class="pbar" id="pbar" onclick="seekTo(event)" title="Click to jump"><div class="pfill" id="pfill"></div></div>
     <div class="pct" id="pct">0%</div>
     <a href="/diagnostic" class="fcta" id="fcta">Get My Plan</a>
   </div>
@@ -1748,15 +1748,69 @@ function playAudio(url, cb){
 }
 
 function playStatic(cb){
-  if(muted){if(cb)cb();return;}  // skip static when muted
+  if(muted){if(cb)cb();return;}
   try{
     var ctx2=new(window.AudioContext||window.webkitAudioContext)();
-    var buf=ctx2.createBuffer(1,ctx2.sampleRate*0.12,ctx2.sampleRate);
-    var d=buf.getChannelData(0);
-    for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.08;
-    var src=ctx2.createBufferSource(); src.buffer=buf;
-    src.connect(ctx2.destination); src.start();
-    src.onended=function(){ctx2.close();if(cb)cb();};
+    var dur=0.55, sr=ctx2.sampleRate;
+
+    // Futuristic "AI activating" — rising arpeggiated tones + shimmer
+    var osc1=ctx2.createOscillator();
+    var osc2=ctx2.createOscillator();
+    var osc3=ctx2.createOscillator();
+    var osc4=ctx2.createOscillator();
+
+    osc1.type='sine'; osc1.frequency.setValueAtTime(220,ctx2.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(880,ctx2.currentTime+0.3);
+
+    osc2.type='sine'; osc2.frequency.setValueAtTime(330,ctx2.currentTime+0.08);
+    osc2.frequency.exponentialRampToValueAtTime(1320,ctx2.currentTime+0.35);
+
+    osc3.type='triangle'; osc3.frequency.setValueAtTime(440,ctx2.currentTime+0.16);
+    osc3.frequency.exponentialRampToValueAtTime(1760,ctx2.currentTime+0.42);
+
+    osc4.type='sine'; osc4.frequency.setValueAtTime(1047,ctx2.currentTime+0.28);
+    osc4.frequency.exponentialRampToValueAtTime(2093,ctx2.currentTime+0.50);
+
+    var g1=ctx2.createGain(); g1.gain.setValueAtTime(0,ctx2.currentTime);
+    g1.gain.linearRampToValueAtTime(0.12,ctx2.currentTime+0.04);
+    g1.gain.linearRampToValueAtTime(0,ctx2.currentTime+0.32);
+
+    var g2=ctx2.createGain(); g2.gain.setValueAtTime(0,ctx2.currentTime+0.08);
+    g2.gain.linearRampToValueAtTime(0.10,ctx2.currentTime+0.14);
+    g2.gain.linearRampToValueAtTime(0,ctx2.currentTime+0.38);
+
+    var g3=ctx2.createGain(); g3.gain.setValueAtTime(0,ctx2.currentTime+0.16);
+    g3.gain.linearRampToValueAtTime(0.09,ctx2.currentTime+0.22);
+    g3.gain.linearRampToValueAtTime(0,ctx2.currentTime+0.46);
+
+    var g4=ctx2.createGain(); g4.gain.setValueAtTime(0,ctx2.currentTime+0.28);
+    g4.gain.linearRampToValueAtTime(0.14,ctx2.currentTime+0.34);
+    g4.gain.linearRampToValueAtTime(0,ctx2.currentTime+0.55);
+
+    // Shimmer layer — high frequency noise
+    var buf=ctx2.createBuffer(1,sr*0.2,sr);
+    var dd=buf.getChannelData(0);
+    for(var i=0;i<dd.length;i++) dd[i]=(Math.random()*2-1)*0.025;
+    var noise=ctx2.createBufferSource(); noise.buffer=buf;
+    var noiseG=ctx2.createGain(); noiseG.gain.setValueAtTime(0,ctx2.currentTime);
+    noiseG.gain.linearRampToValueAtTime(1,ctx2.currentTime+0.1);
+    noiseG.gain.linearRampToValueAtTime(0,ctx2.currentTime+0.2);
+    var hipass=ctx2.createBiquadFilter(); hipass.type='highpass'; hipass.frequency.value=3000;
+    noise.connect(hipass); hipass.connect(noiseG); noiseG.connect(ctx2.destination);
+    noise.start();
+
+    osc1.connect(g1); g1.connect(ctx2.destination);
+    osc2.connect(g2); g2.connect(ctx2.destination);
+    osc3.connect(g3); g3.connect(ctx2.destination);
+    osc4.connect(g4); g4.connect(ctx2.destination);
+
+    osc1.start(ctx2.currentTime); osc1.stop(ctx2.currentTime+0.32);
+    osc2.start(ctx2.currentTime+0.08); osc2.stop(ctx2.currentTime+0.38);
+    osc3.start(ctx2.currentTime+0.16); osc3.stop(ctx2.currentTime+0.46);
+    osc4.start(ctx2.currentTime+0.28); osc4.stop(ctx2.currentTime+0.55);
+
+    // Fire cb after full sequence
+    setTimeout(function(){ctx2.close();if(cb)cb();}, dur*1000+80);
   }catch(e){if(cb)cb();}
 }
 
@@ -1882,6 +1936,28 @@ function speak(id,text,sol,done){
       hideBubble(); setTimeout(done,200);
     }, sol?1600:950);
   });
+}
+
+
+function seekTo(e){
+  if(!started) return;
+  var bar=document.getElementById('pbar');
+  var rect=bar.getBoundingClientRect();
+  var pct=(e.clientX-rect.left)/rect.width;
+  pct=Math.max(0,Math.min(1,pct));
+  var targetStep=Math.round(pct*SCRIPT.length);
+  targetStep=Math.max(0,Math.min(SCRIPT.length-1,targetStep));
+  // Stop current speech
+  stopV();
+  activeSpeaker=null;
+  hideBubble();
+  clearTimeout(sTO);
+  // Jump to step
+  step=targetStep;
+  paused=false;
+  setPlay(true);
+  setProg();
+  runStep();
 }
 
 function runStep(){
