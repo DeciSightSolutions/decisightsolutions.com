@@ -130,7 +130,7 @@ canvas{display:block;position:fixed;top:46px;left:0;width:100%;height:calc(100vh
     <button id="btnMute" onclick="toggleMute()" title="Mute / Unmute" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.04);border:1px solid #1a2438;border-radius:8px;cursor:pointer;padding:0 10px;height:32px;transition:all .2s">
       <svg id="iVol" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#6a8898" stroke-width="1.8" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       <svg id="iMute" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" stroke="#ef4444"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-      <span id="muteLabel" style="font-family:'DM Mono',monospace;font-size:9px;color:#6a8898;letter-spacing:.04em">SOUND</span>
+      <span id="muteLabel" style="font-family:'DM Mono',monospace;font-size:9px;color:#6a8898;letter-spacing:.04em">MUTE</span>
     </button>
     <div id="btnEL" style="font-size:8px;font-family:DM Mono,monospace;color:#384858;padding:0 8px;border-radius:6px;border:1px solid #1a2438;height:32px;display:flex;align-items:center;gap:4px"><span id="voiceStatus" style="width:6px;height:6px;border-radius:50%;background:#384858;display:inline-block"></span><span id="voiceLabel">Voice</span></div>
   </div>
@@ -242,25 +242,27 @@ function isoBox(x,y,z, w,d,h, cT,cF,cR) {
 // ROOM
 // ═══════════════════════════════════════════════════
 function drawRoom() {
-  // Floor
+  // Floor — warm light oak planks
   for (var fy = 0; fy < 10; fy++) {
     for (var fx = 0; fx < 14; fx++) {
-      var col = (fx+fy)%2===0 ? '#c9bd9b' : '#bfb393';
+      var plankRow = Math.floor(fy * 2) % 4;
+      var col = plankRow===0 ? '#2a3a52' : plankRow===1 ? '#253448' : plankRow===2 ? '#2e3e58' : '#273650';
       var p0=iso(fx,fy,0),p1=iso(fx+1,fy,0),p2=iso(fx+1,fy+1,0),p3=iso(fx,fy+1,0);
       ctx.beginPath();
       ctx.moveTo(p0.sx,p0.sy); ctx.lineTo(p1.sx,p1.sy);
       ctx.lineTo(p2.sx,p2.sy); ctx.lineTo(p3.sx,p3.sy);
-      ctx.closePath(); ctx.fillStyle = col; ctx.fill();
-      ctx.strokeStyle='rgba(0,0,0,.04)'; ctx.lineWidth=0.4; ctx.stroke();
+      ctx.closePath(); ctx.fillStyle=col; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.03)'; ctx.lineWidth=0.5; ctx.stroke();
     }
   }
+  
   // North wall
   for (var wx=0; wx<14; wx++) {
-    isoBox(wx,0,0, 1,0.08,3.6, '#d8d4c6','#cecab8',shade('#cecab8',-8));
+    isoBox(wx,0,0, 1,0.08,3.6, '#f2ece0','#e6dece',shade('#e6dece',-5));
   }
   // West wall
   for (var wy=0; wy<10; wy++) {
-    isoBox(0,wy,0, 0.08,1,3.6, '#d0ccbc','#c8c4b4',shade('#c8c4b4',-8));
+    isoBox(0,wy,0, 0.08,1,3.6, '#eee8dc','#e2dcd0',shade('#e2dcd0',-5));
   }
   // Windows
   [1.2, 5.2, 9.2].forEach(function(wx) {
@@ -270,248 +272,402 @@ function drawRoom() {
     ctx.moveTo(p0.sx,p0.sy);ctx.lineTo(p1.sx,p1.sy);ctx.lineTo(p2.sx,p2.sy);ctx.lineTo(p3.sx,p3.sy);
     ctx.closePath();
     var g=ctx.createLinearGradient(p3.sx,p3.sy,p0.sx,p0.sy);
-    g.addColorStop(0,'rgba(160,210,255,.36)'); g.addColorStop(1,'rgba(130,185,248,.2)');
+    g.addColorStop(0,'rgba(60,100,200,.35)'); g.addColorStop(1,'rgba(40,70,160,.18)');
     ctx.fillStyle=g; ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.strokeStyle='rgba(140,180,255,.5)'; ctx.lineWidth=1.5; ctx.stroke();
     // Mullion
     var m0=iso(wx+1.1,0,0.5),m1=iso(wx+1.1,0,2.2);
     ctx.beginPath(); ctx.moveTo(m0.sx,m0.sy); ctx.lineTo(m1.sx,m1.sy);
-    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.strokeStyle='rgba(120,160,240,.35)'; ctx.lineWidth=1; ctx.stroke();
     // Sill
-    isoBox(wx-0.05,0,0.44, 2.3,0.05,0.06, '#c8c0a0','#a8a080',shade('#a8a080',-8));
+    isoBox(wx-0.05,0,0.44, 2.3,0.05,0.06, '#1e2a42','#162038',shade('#162038',-8));
   });
+  // Dado rail — subtle horizontal architectural detail
+  for(var dx=0;dx<14;dx++){
+    isoBox(dx,0,1.05, 1,0.04,0.06, '#2a3650','#222c44',shade('#222c44',-6));
+  }
   // Skirting
-  isoBox(0,0,0, 14,0.06,0.1, '#b0aa96','#a8a28e',shade('#a8a28e',-10));
-  isoBox(0,0,0, 0.06,10,0.1, '#a8a28e',shade('#a8a28e',-5),shade('#a8a28e',-12));
+  isoBox(0,0,0, 14,0.06,0.1, '#2a3040','#181e2a',shade('#181e2a',-6));
+  isoBox(0,0,0, 0.06,10,0.1, '#0c1220',shade('#0c1220',-4),shade('#0c1220',-10));
 }
 
 // ═══════════════════════════════════════════════════
 // FURNITURE
 // ═══════════════════════════════════════════════════
-var TX=2.8,TY=2.8,TW=8.4,TD=4.4,TH=0.78;
+var TX=2.6,TY=1.8,TW=8.4,TD=5.8,TH=0.42;
 
 // Background furniture: whiteboard, credenza, plants (always behind characters)
 function drawWhiteboardLogo() {
-  // Draw a clean simple cat directly in iso screen coords
-  // Whiteboard face: x=0.04, y=1.60→5.90, z=0.65→2.22
-  // We place logo at center of board
+  // ── Glass whiteboard — professional consultancy style ──────────
+  // The whiteboard faces west (x≈0.045), spans y 1.60→5.90, z 0.60→2.18
+  // We render everything in 2D transformed to the iso surface
 
-  // Get screen position of board center and reference points for angle
-  var ctr  = iso(0.045, 3.75, 1.44);  // center
-  var rgt  = iso(0.045, 4.75, 1.44);  // 1 unit right (along y)
+  // Get iso screen coords of 4 corners of the board face
+  var TL = iso(0.048, 1.62, 2.14);  // top-left   (high y-low, high z)
+  var TR = iso(0.048, 5.88, 2.14);  // top-right  (high y, high z)
+  var BL = iso(0.048, 1.62, 0.62);  // bottom-left
+  var BR = iso(0.048, 5.88, 0.62);  // bottom-right
 
-  // Angle the board surface makes with horizontal
-  var ang = Math.atan2(rgt.sy - ctr.sy, rgt.sx - ctr.sx);
-  // Note: in iso this goes screen-right-and-down → text reads correctly if we use ang+PI
-  var textAng = ang + Math.PI; // flip so text reads left→right from viewer
+  // Board pixel dimensions
+  var BW = Math.sqrt(Math.pow(TR.sx-TL.sx,2)+Math.pow(TR.sy-TL.sy,2)); // width along top edge
+  var BH = Math.sqrt(Math.pow(BL.sx-TL.sx,2)+Math.pow(BL.sy-TL.sy,2)); // height along left edge
 
-  // Board pixel width (for scaling)
-  var tl = iso(0.045, 1.65, 2.18);
-  var tr = iso(0.045, 5.85, 2.18);
-  var bw = Math.sqrt(Math.pow(tr.sx-tl.sx,2)+Math.pow(tr.sy-tl.sy,2));
-  var bh = Math.sqrt(Math.pow(iso(0.045,1.65,0.68).sx-tl.sx,2)+Math.pow(iso(0.045,1.65,0.68).sy-tl.sy,2));
+  // Iso surface angle (along the y-axis of world)
+  var ang = Math.atan2(TR.sy-TL.sy, TR.sx-TL.sx);
 
-  // Scale relative to board size
-  var S = bh * 0.38; // animal size
-  var navy = '#1a3a5c';
+  // Helper: draw at a position on the board surface
+  // px,py = 0..1 normalized position on board (0,0=TL, 1,1=BR)
+  function boardPt(px, py) {
+    // Bilinear interpolation across the 4 corners
+    var tx = TL.sx + (TR.sx-TL.sx)*px + (BL.sx-TL.sx)*py + (BR.sx-TR.sx-BL.sx+TL.sx)*px*py;
+    var ty = TL.sy + (TR.sy-TL.sy)*px + (BL.sy-TL.sy)*py + (BR.sy-TR.sy-BL.sy+TL.sy)*px*py;
+    return {sx:tx, sy:ty};
+  }
 
-  // ── Simple clean cat at left of board ──
-  var catPos = iso(0.045, 2.40, 1.44);
-  ctx.save();
-  ctx.translate(catPos.sx, catPos.sy);
-  ctx.rotate(textAng);
+  // Set up a transform that maps a local 2D canvas to the board surface
+  function boardCtx(px, py) {
+    // Returns screen coords for a point at normalized position px,py
+    return boardPt(px, py);
+  }
 
-  // Body (oval)
-  ctx.fillStyle = navy;
-  ctx.beginPath(); ctx.ellipse(0, S*0.15, S*0.50, S*0.38, 0, 0, Math.PI*2); ctx.fill();
+  // ── Helper to draw a rect on the board surface ─────────────────
+  // x,y,w,h all in normalized board coords (0..1)
+  function boardRect(x, y, w, h, fillStyle, strokeStyle, sw) {
+    var p0=boardPt(x,y), p1=boardPt(x+w,y), p2=boardPt(x+w,y+h), p3=boardPt(x,y+h);
+    ctx.beginPath();
+    ctx.moveTo(p0.sx,p0.sy); ctx.lineTo(p1.sx,p1.sy);
+    ctx.lineTo(p2.sx,p2.sy); ctx.lineTo(p3.sx,p3.sy);
+    ctx.closePath();
+    if(fillStyle){ctx.fillStyle=fillStyle; ctx.fill();}
+    if(strokeStyle){ctx.strokeStyle=strokeStyle; ctx.lineWidth=sw||1; ctx.stroke();}
+  }
 
-  // Head (circle)
-  ctx.beginPath(); ctx.ellipse(0, -S*0.28, S*0.34, S*0.32, 0, 0, Math.PI*2); ctx.fill();
+  // ── Helper to draw text on board surface ───────────────────────
+  // bx,by = normalized position of text anchor on board
+  // returns a save/translate/rotate context for drawing
+  function boardText(bx, by, text, font, color, align) {
+    var pt = boardPt(bx, by);
+    ctx.save();
+    ctx.translate(pt.sx, pt.sy);
+    ctx.rotate(ang);
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = align||'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(text, 0, 0);
+    ctx.restore();
+  }
 
-  // Pointy ears
-  ctx.beginPath(); ctx.moveTo(-S*.28,-S*.44); ctx.lineTo(-S*.14,-S*.70); ctx.lineTo(-S*.02,-S*.44); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo( S*.28,-S*.44); ctx.lineTo( S*.14,-S*.70); ctx.lineTo( S*.02,-S*.44); ctx.closePath(); ctx.fill();
-  // Inner ear pink
-  ctx.fillStyle='rgba(255,255,255,.3)';
-  ctx.beginPath(); ctx.moveTo(-S*.24,-S*.46); ctx.lineTo(-S*.14,-S*.64); ctx.lineTo(-S*.06,-S*.46); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo( S*.24,-S*.46); ctx.lineTo( S*.14,-S*.64); ctx.lineTo( S*.06,-S*.46); ctx.closePath(); ctx.fill();
+  // ── Helper: draw a line on board surface ───────────────────────
+  function boardLine(x1,y1,x2,y2, color, lw) {
+    var p1=boardPt(x1,y1), p2=boardPt(x2,y2);
+    ctx.strokeStyle=color; ctx.lineWidth=lw||1; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(p1.sx,p1.sy); ctx.lineTo(p2.sx,p2.sy); ctx.stroke();
+  }
 
-  // Tail (curving)
-  ctx.fillStyle=navy;
-  ctx.beginPath(); ctx.moveTo(S*.40,S*.32); ctx.quadraticCurveTo(S*.80,S*.45,S*.72,S*.02); ctx.quadraticCurveTo(S*.60,-S*.08,S*.46,S*.18); ctx.closePath(); ctx.fill();
+  // ── Scale: BH is the pixel height of board ────────────────────
+  var fs = function(frac) { return Math.round(BH * frac) + 'px'; };
+  var pad = 0.035; // normalized padding
 
-  // Eyes (white with pupils)
-  ctx.fillStyle='rgba(255,255,255,.95)';
-  ctx.beginPath(); ctx.ellipse(-S*.11,-S*.30,S*.075,S*.095,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse( S*.11,-S*.30,S*.075,S*.095,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#0a1828';
-  ctx.beginPath(); ctx.ellipse(-S*.11,-S*.30,S*.035,S*.07,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse( S*.11,-S*.30,S*.035,S*.07,0,0,Math.PI*2); ctx.fill();
-  // Catchlight
-  ctx.fillStyle='rgba(255,255,255,.9)';
-  ctx.beginPath(); ctx.arc(-S*.09,-S*.33,S*.018,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc( S*.09,-S*.33,S*.018,0,Math.PI*2); ctx.fill();
+  // ══════════════════════════════════════════════════════════════
+  // GLASS REFLECTION on whiteboard surface
+  // ══════════════════════════════════════════════════════════════
+  // Subtle glass sheen — diagonal highlight
+  var glassP1 = boardPt(0.02, 0.03);
+  var glassP2 = boardPt(0.25, 0.45);
+  var glassGrad = ctx.createLinearGradient(glassP1.sx,glassP1.sy, glassP2.sx,glassP2.sy);
+  glassGrad.addColorStop(0, 'rgba(255,255,255,.18)');
+  glassGrad.addColorStop(0.4, 'rgba(255,255,255,.06)');
+  glassGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  boardRect(0.02, 0.03, 0.22, 0.42, glassGrad);
 
-  // Nose (tiny triangle)
-  ctx.fillStyle='rgba(255,255,255,.6)';
-  ctx.beginPath(); ctx.moveTo(0,-S*.18); ctx.lineTo(-S*.04,-S*.12); ctx.lineTo(S*.04,-S*.12); ctx.closePath(); ctx.fill();
+  // ══════════════════════════════════════════════════════════════
+  // HEADER BAR — thin dark strip at top
+  // ══════════════════════════════════════════════════════════════
+  boardRect(pad, pad, 1-pad*2, 0.10, '#1e293b');
+  // DeciSight brand
+  var logoFont = 'bold ' + fs(0.082) + ' Syne,Arial,sans-serif';
+  boardText(pad+0.02, pad+0.014, 'Deci', logoFont, '#f1f5f9');
+  // Measure "Deci" width — approximation
+  var deciW = 0.12;
+  boardText(pad+0.02+deciW, pad+0.014, 'Sight', logoFont, '#22c55e');
+  // Right: "Q1 REVIEW · MARCH 2026" tag
+  boardRect(0.62, pad+0.012, 0.30, 0.076, 'rgba(34,197,94,.18)');
+  boardLine(0.62, pad+0.012, 0.62, pad+0.088, '#22c55e', 2);
+  boardText(0.635, pad+0.022, 'ANIMEDICA · MARCH 2026', 'bold ' + fs(0.058) + ' DM Mono,monospace', '#22c55e');
 
-  // Whiskers
-  ctx.strokeStyle='rgba(26,58,92,.45)'; ctx.lineWidth=1.2; ctx.lineCap='round';
-  [[-S*.55,-S*.22,-S*.16,-S*.23],[-S*.55,-S*.17,-S*.16,-S*.18],
-   [ S*.55,-S*.22, S*.16,-S*.23],[ S*.55,-S*.17, S*.16,-S*.18]].forEach(function(w){
-    ctx.beginPath(); ctx.moveTo(w[0],w[1]); ctx.lineTo(w[2],w[3]); ctx.stroke();
+  // ══════════════════════════════════════════════════════════════
+  // KPI ROW — 4 numbers across
+  // ══════════════════════════════════════════════════════════════
+  var kpis = [
+    {v:'€855K', l:'Group Revenue',  c:'#3b82f6'},
+    {v:'20%',   l:'EBITDA Margin',  c:'#22c55e'},
+    {v:'+2%',   l:'vs Budget',      c:'#22c55e'},
+    {v:'42 d',  l:'Avg DSO',        c:'#f59e0b'},
+  ];
+  var kpiY = pad + 0.115, kpiH = 0.155;
+  var kpiW2 = (1-pad*2) / kpis.length;
+  kpis.forEach(function(k,i) {
+    var kx = pad + i*kpiW2;
+    // Alternating bg
+    boardRect(kx, kpiY, kpiW2, kpiH, i%2===0?'rgba(0,0,0,.025)':'rgba(255,255,255,.01)');
+    // Accent line at top of each KPI
+    boardRect(kx, kpiY, kpiW2, 0.006, k.c);
+    // Value — large
+    boardText(kx + kpiW2*0.5 - kpiW2*0.28, kpiY+0.022, k.v, 'bold ' + fs(0.112) + ' DM Mono,monospace', k.c);
+    // Label — small
+    boardText(kx + kpiW2*0.5 - kpiW2*0.24, kpiY+0.108, k.l, fs(0.058) + ' DM Mono,monospace', '#64748b');
+    // Divider
+    if(i>0) boardLine(kx, kpiY+0.01, kx, kpiY+kpiH-0.01, 'rgba(0,0,0,.08)', 0.5);
+  });
+  // KPI row bottom border
+  boardLine(pad, kpiY+kpiH, 1-pad, kpiY+kpiH, 'rgba(0,0,0,.08)', 0.5);
+
+  // ══════════════════════════════════════════════════════════════
+  // MAIN CONTENT AREA — split left chart / right actions
+  // ══════════════════════════════════════════════════════════════
+  var contentY = kpiY + kpiH + 0.025;
+  var contentH = 1 - pad - contentY - 0.04;
+  var splitX = 0.58; // chart takes 58% width
+
+  // ── LEFT: Bar chart ─────────────────────────────────────────
+  var cX = pad+0.01, cW = splitX - pad - 0.04;
+  var cY = contentY, cH = contentH;
+
+  // Chart title
+  boardText(cX, cY, 'Clinic Performance — Revenue vs Budget', 'bold ' + fs(0.060) + ' DM Mono,monospace', '#334155');
+
+  // Chart area
+  var chartTop = cY + 0.072, chartBot = cY + cH - 0.06;
+  var chartLeft = cX + 0.06, chartRight = cX + cW - 0.02;
+  var chartH3 = chartBot - chartTop, chartW3 = chartRight - chartLeft;
+
+  // Y-axis grid lines + labels
+  [0,0.25,0.5,0.75,1].forEach(function(p) {
+    var gy = chartTop + chartH3*(1-p);
+    boardLine(chartLeft, gy, chartRight, gy, p===0?'rgba(0,0,0,.2)':'rgba(0,0,0,.07)', p===0?1:0.5);
+    if(p>0) boardText(chartLeft-0.095, gy-0.022, '€'+Math.round(400*p)+'K', fs(0.048)+' DM Mono,monospace', '#94a3b8', 'right');
+  });
+  // Y-axis line
+  boardLine(chartLeft, chartTop, chartLeft, chartBot, 'rgba(0,0,0,.15)', 1);
+
+  // Bars — 3 clinics, each has budget (outline) + actual (filled)
+  var clData = [
+    {name:'Amsterdam', act:369, bgt:340, col:'#3b82f6', flag:'🇳🇱'},
+    {name:'Rotterdam',  act:291, bgt:280, col:'#10b981', flag:'🇳🇱'},
+    {name:'Frankfurt', act:194, bgt:220, col:'#f97316', flag:'🇩🇪'},
+  ];
+  var maxV2=400, grpSlot=chartW3/clData.length;
+  clData.forEach(function(cl,i) {
+    var gLeft = chartLeft + i*grpSlot + grpSlot*0.08;
+    var bW3 = grpSlot*0.34, gap3=grpSlot*0.07;
+
+    // Budget bar — subtle outline
+    var bgtH3 = chartH3 * cl.bgt/maxV2;
+    var bgtTop = chartBot - bgtH3;
+    boardRect(gLeft, bgtTop, bW3, bgtH3, 'rgba(0,0,0,.04)', cl.col+'55', 0.6);
+
+    // Actual bar — solid
+    var actH = chartH3 * cl.act/maxV2;
+    var actTop = chartBot - actH;
+    boardRect(gLeft+bW3+gap3, actTop, bW3, actH, cl.col);
+    // Shine on actual bar
+    boardRect(gLeft+bW3+gap3, actTop, bW3*0.35, actH, 'rgba(255,255,255,.12)');
+
+    // Variance badge above budget bar
+    var varPct = Math.round((cl.act-cl.bgt)/cl.bgt*100);
+    var badgeC = varPct>=0?'#16a34a':'#dc2626';
+    var badgeBg = varPct>=0?'rgba(34,197,94,.14)':'rgba(239,68,68,.12)';
+    boardRect(gLeft, bgtTop-0.052, bW3, 0.042, badgeBg);
+    boardText(gLeft+bW3*0.02, bgtTop-0.048, (varPct>=0?'+':'')+varPct+'%', 'bold '+fs(0.052)+' DM Mono,monospace', badgeC);
+
+    // Clinic label below
+    boardText(gLeft+bW3+gap3+bW3*0.01, chartBot+0.012, cl.name.substr(0,3), 'bold '+fs(0.055)+' DM Mono,monospace', cl.col);
+    boardText(gLeft+bW3*0.01, chartBot+0.012, 'Bgt', fs(0.048)+' DM Mono,monospace', '#94a3b8');
   });
 
-  ctx.restore();
+  // Legend
+  boardRect(chartRight-0.14, chartTop, 0.03, 0.025, 'rgba(0,0,0,.06)', '#64748b', 0.5);
+  boardText(chartRight-0.105, chartTop+0.002, 'Budget', fs(0.046)+' DM Mono,monospace', '#64748b');
+  boardRect(chartRight-0.14, chartTop+0.036, 0.03, 0.025, '#3b82f6');
+  boardText(chartRight-0.105, chartTop+0.038, 'Actual', fs(0.046)+' DM Mono,monospace', '#64748b');
 
-  // ── ANIMEDICA text (center of board) ──
-  var txtPos = iso(0.045, 3.75, 1.44);
-  ctx.save();
-  ctx.translate(txtPos.sx, txtPos.sy);
-  ctx.rotate(textAng);
-  ctx.fillStyle = navy;
-  ctx.font = 'bold ' + Math.round(bh*0.26) + 'px Syne,"Plus Jakarta Sans",Arial,sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('ANIMEDICA', 0, 0);
-  // Tagline
-  ctx.fillStyle = 'rgba(26,58,92,.5)';
-  ctx.font = Math.round(bh*0.13) + 'px "DM Mono","JetBrains Mono",monospace';
-  ctx.fillText('VETERINARY GROUP', 0, bh*0.38);
-  ctx.restore();
+  // ── VERTICAL DIVIDER ───────────────────────────────────────
+  boardLine(splitX, contentY, splitX, contentY+contentH, 'rgba(0,0,0,.09)', 0.6);
 
-  // ── Simple dog at right of board ──
-  var dogPos = iso(0.045, 5.10, 1.44);
-  ctx.save();
-  ctx.translate(dogPos.sx, dogPos.sy);
-  ctx.rotate(textAng);
+  // ── RIGHT: Action items ─────────────────────────────────────
+  var rX = splitX + 0.025, rW = 1 - splitX - pad - 0.025;
+  boardText(rX, contentY, 'Actions Required', 'bold '+fs(0.060)+' DM Mono,monospace', '#334155');
 
-  ctx.fillStyle = navy;
-  // Body
-  ctx.beginPath(); ctx.ellipse(0, S*0.15, S*0.52, S*0.38, 0, 0, Math.PI*2); ctx.fill();
-  // Head (rounder)
-  ctx.beginPath(); ctx.ellipse(0, -S*0.26, S*0.36, S*0.34, 0, 0, Math.PI*2); ctx.fill();
-  // Snout
-  ctx.beginPath(); ctx.ellipse(0, -S*0.10, S*0.20, S*0.16, 0, 0, Math.PI*2); ctx.fill();
-  // Floppy ears
-  ctx.beginPath(); ctx.moveTo(-S*.32,-S*.44); ctx.quadraticCurveTo(-S*.58,-S*.32,-S*.54,-S*.06); ctx.quadraticCurveTo(-S*.48,S*.06,-S*.34,-S*.02); ctx.quadraticCurveTo(-S*.30,-S*.18,-S*.28,-S*.42); ctx.closePath(); ctx.fill();
-  ctx.beginPath(); ctx.moveTo( S*.32,-S*.44); ctx.quadraticCurveTo( S*.58,-S*.32, S*.54,-S*.06); ctx.quadraticCurveTo( S*.48,S*.06, S*.34,-S*.02); ctx.quadraticCurveTo( S*.30,-S*.18, S*.28,-S*.42); ctx.closePath(); ctx.fill();
-  // Tail (wagging up)
-  ctx.beginPath(); ctx.moveTo(S*.44,S*.04); ctx.quadraticCurveTo(S*.82,-S*.10,S*.74,-S*.46); ctx.quadraticCurveTo(S*.62,-S*.58,S*.46,-S*.28); ctx.quadraticCurveTo(S*.56,-S*.12,S*.46,S*.12); ctx.closePath(); ctx.fill();
-  // Eyes
-  ctx.fillStyle='rgba(255,255,255,.95)';
-  ctx.beginPath(); ctx.ellipse(-S*.12,-S*.28,S*.078,S*.098,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse( S*.12,-S*.28,S*.078,S*.098,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#0a1828';
-  ctx.beginPath(); ctx.ellipse(-S*.12,-S*.28,S*.036,S*.070,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse( S*.12,-S*.28,S*.036,S*.070,0,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(255,255,255,.9)';
-  ctx.beginPath(); ctx.arc(-S*.10,-S*.31,S*.018,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc( S*.10,-S*.31,S*.018,0,Math.PI*2); ctx.fill();
-  // Nose
-  ctx.fillStyle='#0a1828';
-  ctx.beginPath(); ctx.ellipse(0,-S*.09,S*.055,S*.040,0,0,Math.PI*2); ctx.fill();
+  var items = [
+    {priority:'URGENT', text:'DAT Versicherung', sub:'€34,200 · 72d overdue', dot:'#ef4444'},
+    {priority:'URGENT', text:'VGZ Insurance',    sub:'€28,800 · 67d · escalate', dot:'#ef4444'},
+    {priority:'ACTION', text:'Frankfurt recovery', sub:'Locum +€12.6K vs budget', dot:'#f59e0b'},
+    {priority:'✓ DONE', text:'AMS +9% · ROT +4%', sub:'Both above target', dot:'#22c55e'},
+  ];
+  items.forEach(function(item, i) {
+    var iy = contentY + 0.072 + i*(contentH*0.195);
+    var rowBg = i%2===0?'rgba(0,0,0,.018)':'rgba(0,0,0,.008)';
+    boardRect(rX, iy-0.01, rW, contentH*0.185, rowBg);
 
-  ctx.restore();
+    // Priority pill
+    var pillC = item.dot==='#22c55e'?'rgba(34,197,94,.12)':item.dot==='#ef4444'?'rgba(239,68,68,.1)':'rgba(245,158,11,.1)';
+    boardRect(rX+0.002, iy, 0.095, 0.042, pillC);
+    boardText(rX+0.006, iy+0.006, item.priority, 'bold '+fs(0.044)+' DM Mono,monospace', item.dot);
 
-  // ── Thin divider lines ────────────────────────────
-  var l1a=iso(0.044,1.72,1.92), l1b=iso(0.044,5.78,1.92);
-  var l2a=iso(0.044,1.72,0.82), l2b=iso(0.044,5.78,0.82);
-  ctx.strokeStyle='rgba(26,58,92,.18)'; ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.moveTo(l1a.sx,l1a.sy); ctx.lineTo(l1b.sx,l1b.sy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(l2a.sx,l2a.sy); ctx.lineTo(l2b.sx,l2b.sy); ctx.stroke();
+    // Text
+    boardText(rX+0.002, iy+0.052, item.text, 'bold '+fs(0.062)+' DM Mono,monospace', '#1e293b');
+    boardText(rX+0.002, iy+0.106, item.sub,  fs(0.052)+' DM Mono,monospace', '#64748b');
+
+    // Dot indicator
+    var dotPt = boardPt(rX+rW-0.025, iy+0.072);
+    ctx.fillStyle = item.dot;
+    ctx.beginPath(); ctx.arc(dotPt.sx, dotPt.sy, BH*0.018, 0, Math.PI*2); ctx.fill();
+  });
+
+  // ── BOTTOM STRIP — signed off ───────────────────────────────
+  var botY = 1 - pad - 0.07;
+  boardRect(pad, botY, 1-pad*2, 0.065, '#f0fdf4');
+  boardLine(pad, botY, 1-pad, botY, '#22c55e', 1);
+  boardText(pad+0.02, botY+0.012, '✓  Monthly Close Signed Off — March 31, 2026 · Audit-Agent QA Complete',
+    'bold '+fs(0.062)+' DM Mono,monospace', '#15803d');
+
+  // ══════════════════════════════════════════════════════════════
+  // ALUMINIUM FRAME — premium anodised silver
+  // ══════════════════════════════════════════════════════════════
+  // Top rail
+  var corners2=[TL,TR,BR,BL];
+  ctx.strokeStyle='rgba(160,160,170,.9)'; ctx.lineWidth=3; ctx.lineJoin='round';
+  ctx.beginPath();
+  corners2.forEach(function(c,i){ i?ctx.lineTo(c.sx,c.sy):ctx.moveTo(c.sx,c.sy); });
+  ctx.closePath(); ctx.stroke();
+  // Inner frame highlight
+  var iTL=boardPt(0.003,0.003),iTR=boardPt(0.997,0.003),iBR=boardPt(0.997,0.997),iBL=boardPt(0.003,0.997);
+  ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.lineWidth=1;
+  ctx.beginPath();
+  [iTL,iTR,iBR,iBL].forEach(function(c,i){ i?ctx.lineTo(c.sx,c.sy):ctx.moveTo(c.sx,c.sy); });
+  ctx.closePath(); ctx.stroke();
+
+  // Marker tray at bottom — physical detail
+  var mtL=iso(0.032,1.60,0.60), mtR=iso(0.032,5.90,0.60);
+  var mtBL=iso(0.000,1.60,0.60), mtBR=iso(0.000,5.90,0.60);
+  ctx.fillStyle='#c8c5be';
+  ctx.beginPath(); ctx.moveTo(mtL.sx,mtL.sy); ctx.lineTo(mtR.sx,mtR.sy);
+  ctx.lineTo(mtBR.sx,mtBR.sy+4); ctx.lineTo(mtBL.sx,mtBL.sy+4); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.12)'; ctx.lineWidth=0.5; ctx.stroke();
+
+  // Markers in tray (3 coloured)
+  [[1.9,'#3b82f6'],[2.5,'#ef4444'],[3.1,'#22c55e']].forEach(function(m) {
+    var mk=iso(0.016,m[0],0.62);
+    ctx.fillStyle=m[1];
+    ctx.beginPath(); ctx.ellipse(mk.sx,mk.sy,4,2.5,ang,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=0.5; ctx.stroke();
+  });
+
+  // Eraser
+  var erS=iso(0.016,5.4,0.62);
+  ctx.fillStyle='#f5f0e8';
+  ctx.beginPath(); ctx.ellipse(erS.sx,erS.sy,7,3.5,ang,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.1)'; ctx.lineWidth=0.5; ctx.stroke();
 }
+
 
 function drawFurnitureBack() {
   // Whiteboard with Anicura logo
-  isoBox(0,1.5,.5, .08,4.5,1.9, '#f2ede2','#d0c8b0','#e4dec8');
-  isoBox(0,1.52,.55, .04,4.46,1.82, '#f8f4ec','#e0dac8','#f0ece0');
+  isoBox(0,1.5,.5, .08,4.5,1.9, '#e8e4dc','#d4d0c8','#dedad2');
+  isoBox(0,1.52,.55, .04,4.46,1.82, '#fafaf8','#f0eee8','#f5f3ee');
   // Draw Anicura logo on whiteboard surface
   drawWhiteboardLogo();
-  isoBox(0,1.5,.44, .08,4.5,.06, '#c0b898','#a8a080',shade('#a8a080',-8));
+  isoBox(0,1.5,.44, .08,4.5,.06, '#c8c0a8','#a8a088',shade('#a8a088',-8));
   // Credenza (east wall)
-  isoBox(13.5,2.0,0, .45,6.0,.82, '#7a5c14','#5a4010','#6a4c12');
-  isoBox(13.5,2.0,.82, .43,6.0,.02, '#8a6a18','#5e4212','#7a5a16');
+  // Credenza — dark walnut bookcase style
+  isoBox(13.5,2.0,0, .45,6.0,.82, '#2c1e0a','#1e1406','#241808');
+  // Top surface — slightly lighter
+  isoBox(13.5,2.0,.82, .43,6.0,.03, '#4a3010','#3a2408','#422c0c');
+  // Cabinet dividers
+  isoBox(13.5,3.9,.05, .43,.04,.75, '#1a1004','#120c02','#161002');
+  isoBox(13.5,5.8,.05, .43,.04,.75, '#1a1004','#120c02','#161002');
+  // Door handles — chrome
+  // Handles removed
+  // Items removed
   // Plant north-west corner (depth ~0.7 - very front)
-  drawPlant(.35,.35,1.4);
+  drawPlant(0.15,7.8,1.5);
   // Plant south-east corner drawn with furniture table (depth ~21)
 }
 
-// Table + chairs drawn in correct depth order with characters
-function drawFurnitureTable() {
-  // North chairs (behind characters who stand at y=1.20)
-  [TX+.5, TX+3.4, TX+6.3].forEach(function(cx) {
-    drawChair(cx, TY-0.72, 'n');
-  });
-  // Notepads north side
-  [TX+.5,TX+3.4,TX+6.3].forEach(function(cx){
-    isoBox(cx+.1,TY-.32,TH+.03, .42,.28,.01, '#f5f0e8','#dedad0','#ece8dc');
-  });
+// ── OVAL BOARDROOM TABLE ─────────────────────────────────────────
+// Draws a rounded/oval conference table using many thin iso slices
+// The oval is approximated as a series of isoBoxes with varying widths
+function drawOvalTable() {
+  var bodyT='#c08840', bodyF='#7a5228', bodyR='#9a6830';
+  var surfT='#cfa050', surfF='#9a6a20', surfR='#b07838';
+  var chrome='#c0c0c8', chromeD='#8a8a94', chromeL='#e0e0e8';
 
-  // ── CONFERENCE TABLE ─────────────────────────────────────────
-  // Four solid legs with taper
-  var lc='#1e1404', lf='#120e04', lr='#1a1004';
-  [[TX+.18,TY+.18],[TX+TW-.38,TY+.18],[TX+.18,TY+TD-.38],[TX+TW-.38,TY+TD-.38]].forEach(function(l){
-    isoBox(l[0],l[1],0,  0.24,0.24,TH-.04, lc,lf,lr);
-    isoBox(l[0]+.04,l[1]+.04,0, 0.16,0.16,TH-.04, '#282010','#181008','#201408');
-  });
-  // Structural apron (hidden under top but creates visual depth on front face)
-  isoBox(TX+.3,TY+.06,TH-.12, TW-.6,0.08,0.08, '#2e1c06','#1e1204','#281604');
-  isoBox(TX+.3,TY+TD-.16,TH-.12, TW-.6,0.08,0.08, '#2e1c06','#1e1204','#281604');
-  isoBox(TX+.06,TY+.28,TH-.12, 0.08,TD-.48,0.08, '#2e1c06','#1e1204','#281604');
-  isoBox(TX+TW-.16,TY+.28,TH-.12, 0.08,TD-.48,0.08, '#2e1c06','#1e1204','#281604');
-  // Table body
-  isoBox(TX,TY,0, TW,TD,TH, '#5e3e0a','#3a2606','#4c3008');
-  // Dark walnut veneer surface
-  isoBox(TX+.02,TY+.02,TH, TW-.04,TD-.04,.03, '#7a5210','#4e3408','#664410');
-  // Lighter central panel (grain highlight)
-  isoBox(TX+.6,TY+.5,TH+.02, TW-1.2,TD-1.0,.008, '#8a5e14','#5a3c0a','#724e10');
-  // Edge banding - all 4 edges darker
-  isoBox(TX+.02,TY+.02,TH+.025, TW-.04,0.06,.005, '#3a2406','#281804',shade('#3a2406',-10));
-  isoBox(TX+.02,TY+TD-.08,TH+.025, TW-.04,0.06,.005, '#3a2406','#281804',shade('#3a2406',-10));
-  isoBox(TX+.02,TY+.02,TH+.025, 0.06,TD-.04,.005, '#3a2406','#281804',shade('#3a2406',-10));
-  isoBox(TX+TW-.08,TY+.02,TH+.025, 0.06,TD-.04,.005, '#3a2406','#281804',shade('#3a2406',-10));
-  // Long gloss reflection
-  var g0=iso(TX+1.2,TY+.45,TH+.038), g1=iso(TX+TW-2.0,TY+.45,TH+.038);
-  var g2=iso(TX+1.8,TY+.8,TH+.036),  g3=iso(TX+TW-2.8,TY+.8,TH+.036);
+  // ── BODY — simple rect sides ──────────────────────────────────
+  isoBox(TX, TY, 0, TW, TD, TH, bodyT, bodyF, bodyR);
+
+  // ── SURFACE ───────────────────────────────────────────────────
+  isoBox(TX+0.04, TY+0.04, TH, TW-0.08, TD-0.08, 0.028, surfT, surfF, surfR);
+
+  // ── GRAIN HIGHLIGHT ───────────────────────────────────────────
+  isoBox(TX+0.8, TY+TD/2-0.30, TH+0.025, TW-1.6, 0.60, 0.006,
+    'rgba(255,235,180,.22)','rgba(255,225,160,.12)','rgba(255,230,170,.18)');
+
+  // ── EDGE BANDING ──────────────────────────────────────────────
+  isoBox(TX+0.02,TY+0.02,TH+0.025, TW-0.04,0.05,0.005, '#6a4218','#4a2e0c',shade('#4a2e0c',-8));
+  isoBox(TX+0.02,TY+TD-0.07,TH+0.025, TW-0.04,0.05,0.005, '#6a4218','#4a2e0c',shade('#4a2e0c',-8));
+  isoBox(TX+0.02,TY+0.02,TH+0.025, 0.05,TD-0.04,0.005, '#6a4218','#4a2e0c',shade('#4a2e0c',-8));
+  isoBox(TX+TW-0.07,TY+0.02,TH+0.025, 0.05,TD-0.04,0.005, '#6a4218','#4a2e0c',shade('#4a2e0c',-8));
+
+  // ── GLOSS REFLECTIONS ─────────────────────────────────────────
+  var cx=TX+TW/2, cy=TY+TD/2;
+  var r0=iso(TX+1.4,cy-0.25,TH+0.042), r1=iso(TX+TW-1.4,cy-0.25,TH+0.042);
+  var r2=iso(TX+2.0,cy+0.05,TH+0.038), r3=iso(TX+TW-2.0,cy+0.05,TH+0.038);
   ctx.lineCap='round';
-  ctx.strokeStyle='rgba(255,255,255,.18)'; ctx.lineWidth=8;
-  ctx.beginPath(); ctx.moveTo(g0.sx,g0.sy); ctx.lineTo(g1.sx,g1.sy); ctx.stroke();
-  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=4;
-  ctx.beginPath(); ctx.moveTo(g2.sx,g2.sy); ctx.lineTo(g3.sx,g3.sy); ctx.stroke();
-  // Carafes
-  [TX+2.2,TX+4.8,TX+7.4].forEach(function(cx) {
-    isoBox(cx,TY+.5,TH+.03, .15,.11,.24, 'rgba(210,235,255,.52)','rgba(175,212,248,.3)','rgba(190,222,252,.4)');
-    isoBox(cx+.02,TY+.52,TH+.06, .11,.07,.14, 'rgba(150,200,255,.35)','rgba(120,175,240,.2)','rgba(135,188,248,.28)');
-  });
+  ctx.strokeStyle='rgba(255,240,210,.30)'; ctx.lineWidth=9;
+  ctx.beginPath(); ctx.moveTo(r0.sx,r0.sy); ctx.lineTo(r1.sx,r1.sy); ctx.stroke();
+  ctx.strokeStyle='rgba(255,235,200,.14)'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(r2.sx,r2.sy); ctx.lineTo(r3.sx,r3.sy); ctx.stroke();
 
-  // Laptops - one per person, 3 north side + 3 south side
-  // North side laptops (facing south, screen tilts toward viewer)
+  // Legs removed — floating table top look
+
+  // Carafes removed
+
+  // Namecards removed
+}
+
+
+// Table + chairs split for correct painter's order
+function drawFurnitureNorthChairs(){
+  // North chairs drawn BEFORE north characters
+  [TX+0.7, TX+3.6, TX+6.5].forEach(function(cx2){
+    drawChair(cx2, TY-0.95, 'n');
+  });
+}
+
+function drawFurnitureTable() {
+  // Table surface + laptops
+  drawOvalTable();
+
   var laptopSeats = [
-    {x:TX+.5,  y:TY-.62, north:true},
-    {x:TX+3.4, y:TY-.62, north:true},
-    {x:TX+6.3, y:TY-.62, north:true},
-    {x:TX+.5,  y:TY+TD+.12, north:false},
-    {x:TX+3.4, y:TY+TD+.12, north:false},
-    {x:TX+6.3, y:TY+TD+.12, north:false}
+    {x:TX+0.5, y:TY+.65, north:false},
+    {x:TX+3.4, y:TY+.65, north:false},
+    {x:TX+6.3, y:TY+.65, north:false},
+    {x:TX+0.5, y:TY+TD-1.05, north:true},
+    {x:TX+3.4, y:TY+TD-1.05, north:true},
+    {x:TX+6.3, y:TY+TD-1.05, north:true}
   ];
   laptopSeats.forEach(function(lp){ drawLaptop(lp.x, lp.y, TH, lp.north); });
 
-  // South chairs (behind table, depth ~12.25)
-  [TX+.5, TX+3.4, TX+6.3].forEach(function(cx) {
-    drawChair(cx, TY+TD+.05, 's');
-  });
-  // Notepads south side
-  [TX+.5,TX+3.4,TX+6.3].forEach(function(cx){
-    isoBox(cx+.1,TY+TD+.48,TH+.03, .42,.28,.01, '#f5f0e8','#dedad0','#ece8dc');
+  // South chairs drawn after table
+  [TX+0.7, TX+3.6, TX+6.5].forEach(function(cx3){
+    drawChair(cx3, TY+TD+.05, 's');
   });
 
-  // South-east plant (depth ~21)
-  drawPlant(12.5,8.5,1.1);
+  // South-east plant
+  drawPlant(0.2,0.3,1.1);
 }
 
-// Keep old name for any leftover calls
 function drawFurniture() { drawFurnitureBack(); drawFurnitureTable(); }
 
 function drawLaptop(x, y, tableZ, north) {
@@ -521,7 +677,7 @@ function drawLaptop(x, y, tableZ, north) {
   // Base / keyboard deck
   isoBox(x, y, tableZ+0.002, lw, ld, lh, '#1a1a1c','#111113','#161618');
   // Keyboard surface texture
-  isoBox(x+0.04, y+0.03, tableZ+lh+0.001, lw-0.08, ld-0.06, 0.004, '#222226','#181819','#1e1e22');
+  isoBox(x+0.04, y+0.03, tableZ+lh+0.001, lw-0.08, ld-0.06, 0.004, '#222226','#181819','#18181e');
   // Trackpad
   isoBox(x+0.17, y+(north?0.22:0.06), tableZ+lh+0.002, 0.18,0.10, 0.003, '#202024','#161618','#1c1c20');
 
@@ -675,63 +831,163 @@ function drawCat(x,y,color,sleeping,t){
 }
 
 function drawChair(x,y,side) {
-  var bm='#252e3c',cm='#303e50',mm='#181e2c';
-  var cw=.88,cd=.72,ch=.78;
+  var leather='#2c1a0e', leatherD='#1e1008', leatherH='#3a2414';
+  var chrome='#909090', chromeD='#606060', chromeL='#b8b8b8';
+  var cw=.88, cd=.72, ch=.78;
   var cx=x+cw/2, cy=y+cd/2;
-  // Star base
+
+  // ── 5-star base on floor ──────────────────────────────────────
   for(var ai=0;ai<5;ai++){
-    var ang=(ai*72-90)*Math.PI/180;
-    isoBox(cx+Math.cos(ang)*.24-.04,cy+Math.sin(ang)*.24-.04,0,.08,.08,.04,mm,shade(mm,-8),shade(mm,-12));
+    var a5=(ai*72-90)*Math.PI/180;
+    var bx=cx+Math.cos(a5)*.30-.03, by=cy+Math.sin(a5)*.30-.03;
+    isoBox(bx,by,0, .06,.06,.025, chromeL,chrome,chromeD);
   }
-  isoBox(cx-.06,cy-.06,0,.12,.12,.07,mm,shade(mm,-10),shade(mm,-15));
-  isoBox(cx-.04,cy-.04,.07,.08,.08,ch-.1,shade(mm,5),mm,shade(mm,-8));
-  isoBox(x,y,ch-.06, cw,cd,.07, bm,'#1e2838',shade(bm,8));
-  isoBox(x+.06,y+.06,ch+.01, cw-.12,cd-.12,.055, '#3a4858',shade(cm,-4),shade(cm,4));
-  isoBox(x+.02,y+.07,ch+.02, .09,cd-.14,.28, shade(bm,-5),shade(bm,-10),shade(bm,-14));
-  isoBox(x+cw-.11,y+.07,ch+.02, .09,cd-.14,.28, shade(bm,-5),shade(bm,-10),shade(bm,-14));
-  isoBox(x+.02,y+.09,ch+.3, .09,cd-.18,.04, shade(cm,4),shade(cm,-5),shade(cm,-8));
-  isoBox(x+cw-.11,y+.09,ch+.3, .09,cd-.18,.04, shade(cm,4),shade(cm,-5),shade(cm,-8));
-  var bz=side==='n'?y+.02:y+cd-.14;
-  isoBox(x+.08,bz,ch+.06, cw-.16,.12,.58, shade(bm,4),shade(bm,-4),shade(bm,8));
-  isoBox(x+.12,bz+(side==='n'?.02:.04),ch+.1, cw-.24,.07,.5, shade(cm,3),shade(cm,-4),shade(cm,3));
-  isoBox(x+.18,bz+(side==='n'?.01:.03),ch+.7, cw-.36,.09,.22, shade(bm,2),shade(bm,-5),shade(bm,6));
+  // Center hub
+  isoBox(cx-.07,cy-.07,0, .14,.14,.04, chromeL,chrome,chromeD);
+  // Pneumatic cylinder
+  isoBox(cx-.04,cy-.04,.04, .08,.08,ch-.18, chrome,chromeD,shade(chromeD,-10));
+
+  // ── Seat ──────────────────────────────────────────────────────
+  isoBox(x+.04,y+.04,ch-.12, cw-.08,cd-.08,.14, leatherH,leather,leatherD);
+  isoBox(x+.08,y+.08,ch+.02, cw-.16,cd-.16,.04, shade(leatherH,10),leatherH,shade(leatherH,-4));
+
+  // ── Armrests ──────────────────────────────────────────────────
+  isoBox(x+.03,y+.08,ch+.02, .09,cd-.18,.26, chrome,chromeD,shade(chromeD,-8));
+  isoBox(x+cw-.12,y+.08,ch+.02, .09,cd-.18,.26, chrome,chromeD,shade(chromeD,-8));
+  isoBox(x+.02,y+.08,ch+.26, .11,cd-.18,.04, leatherH,leather,leatherD);
+  isoBox(x+cw-.13,y+.08,ch+.26, .11,cd-.18,.04, leatherH,leather,leatherD);
+
+  // ── Backrest ──────────────────────────────────────────────────
+  var bz=side==='n'?y+.01:y+cd-.13;
+  // Chrome frame sides
+  isoBox(x+.06,bz+(side==='n'?.01:.04),ch+.04, .06,.10,.72, chromeL,chrome,chromeD);
+  isoBox(x+cw-.12,bz+(side==='n'?.01:.04),ch+.04, .06,.10,.72, chromeL,chrome,chromeD);
+  // Leather pad
+  isoBox(x+.10,bz+(side==='n'?.02:.05),ch+.06, cw-.20,.07,.66, leatherH,leather,leatherD);
+  isoBox(x+.13,bz+(side==='n'?.02:.05),ch+.10, cw-.26,.05,.58, shade(leatherH,8),leatherH,leather);
+  // Headrest
+  isoBox(x+.16,bz+(side==='n'?.02:.06),ch+.76, cw-.32,.08,.18, shade(leatherH,12),leatherH,leatherD);
 }
 
 function drawPlant(x,y,sc) {
-  isoBox(x,y,0, .6*sc,.6*sc,.2*sc, '#8b4513','#6b3410','#7b3c10');
-  var lp=iso(x+.3*sc,y+.3*sc,.35*sc);
-  [[0,0,.5],[-.12,.08,.38],[.1,-.06,.38],[.05,.12,.42],[-.08,-.1,.35]].forEach(function(o,i){
-    var r=(13-i*1.5)*sc;
-    var pp=iso(x+(o[0]+.3)*sc,y+(o[1]+.3)*sc,(.2+o[2])*sc);
-    ctx.beginPath(); ctx.arc(pp.sx,pp.sy,r,0,Math.PI*2);
-    ctx.fillStyle=['#2d8a32','#259028','#1e7a22','#238828','#1c7020'][i]; ctx.fill();
+  // ── Premium architectural planter: Fiddle Leaf Fig style ──────
+  // Low square marble/stone planter
+  var pw=.65*sc, pd=.65*sc, ph=.20*sc;
+  // Outer planter — light stone/marble
+  isoBox(x,y,0, pw,pd,ph, '#d8d2c8','#c4beb2',shade('#c4beb2',-8));
+  // Inner rim — darker groove
+  isoBox(x+.06*sc,y+.06*sc,ph-.02, pw-.12*sc,pd-.12*sc,.05*sc, '#b8b0a4','#a8a096','#b0a89c');
+  // Soil — dark moist earth
+  isoBox(x+.08*sc,y+.08*sc,ph+.01, pw-.16*sc,pd-.16*sc,.02*sc, '#2a1e14','#1e160e','#241a10');
+
+  var cx=x+pw/2, cy=y+pd/2, base=ph+.03*sc;
+
+  // ── TRUNK — single elegant stem, slight lean ─────────────────
+  var trunkW=.06*sc;
+  isoBox(cx-trunkW/2, cy-trunkW/2, base, trunkW,trunkW, .80*sc, '#5c3d20','#3e2810','#4e3218');
+  // Bark texture stripe
+  isoBox(cx-trunkW/2+.01*sc, cy-trunkW/2, base, .01*sc, trunkW, .80*sc, 'rgba(255,255,255,.08)','rgba(255,255,255,.04)','rgba(255,255,255,.06)');
+
+  // ── FIDDLE LEAF FIG — large dramatic leaves ──────────────────
+  // Each leaf: position offset, size, angle, color variation
+  var leaves = [
+    {ox:-.05,oy:-.10,h:.52,rx:.17,ry:.12,rot:-.18,col:'#3a7a42',dark:'#2a5e30'},
+    {ox: .10,oy:-.05,h:.66,rx:.20,ry:.14,rot: .14,col:'#2e6e38',dark:'#1e5228'},
+    {ox:-.14,oy: .07,h:.46,rx:.16,ry:.11,rot:-.28,col:'#3e8048',dark:'#2c6035'},
+    {ox: .05,oy: .12,h:.70,rx:.22,ry:.15,rot: .08,col:'#326c3c',dark:'#205028'},
+    {ox:-.07,oy: .00,h:.80,rx:.19,ry:.13,rot:-.06,col:'#387640',dark:'#285a30'},
+    {ox: .16,oy: .03,h:.54,rx:.15,ry:.10,rot: .22,col:'#2a6234',dark:'#1c4824'},
+  ];
+
+  leaves.forEach(function(lf) {
+    var lx = cx + lf.ox*sc;
+    var ly = cy + lf.oy*sc;
+    var lz = base + lf.h*sc;
+    var lp = iso(lx, ly, lz);
+
+    ctx.save();
+    ctx.translate(lp.sx, lp.sy);
+
+    // Leaf body — oval shape drawn as ellipse at iso angle
+    var isoAng = Math.atan2(
+      iso(lx+.1,ly,lz).sy - lp.sy,
+      iso(lx+.1,ly,lz).sx - lp.sx
+    );
+    ctx.rotate(isoAng + lf.rot);
+
+    var rw = lf.rx * sc * 56, rh = lf.ry * sc * 56;
+
+    // Leaf shadow
+    ctx.fillStyle = 'rgba(0,0,0,.12)';
+    ctx.beginPath(); ctx.ellipse(2, 2, rw, rh, 0, 0, Math.PI*2); ctx.fill();
+
+    // Leaf body gradient
+    var lg = ctx.createRadialGradient(-rw*.2, -rh*.3, rh*.1, 0, 0, Math.max(rw,rh));
+    lg.addColorStop(0, shade(lf.col, 18));
+    lg.addColorStop(.5, lf.col);
+    lg.addColorStop(1, lf.dark);
+    ctx.fillStyle = lg;
+    ctx.beginPath(); ctx.ellipse(0, 0, rw, rh, 0, 0, Math.PI*2); ctx.fill();
+
+    // Central vein — light
+    ctx.strokeStyle = 'rgba(255,255,255,.22)';
+    ctx.lineWidth = 1.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, rh*.85); ctx.lineTo(0, -rh*.85); ctx.stroke();
+
+    // Side veins
+    ctx.strokeStyle = 'rgba(255,255,255,.10)';
+    ctx.lineWidth = 0.8;
+    [-0.5,-0.25,0.25,0.5].forEach(function(v) {
+      ctx.beginPath();
+      ctx.moveTo(0, v*rh);
+      ctx.lineTo(rw*.7, v*rh - rh*.1);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, v*rh);
+      ctx.lineTo(-rw*.7, v*rh - rh*.1);
+      ctx.stroke();
+    });
+
+    // Leaf edge highlight
+    ctx.strokeStyle = shade(lf.col, 12) + '60';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.ellipse(0, 0, rw, rh, 0, 0, Math.PI*2); ctx.stroke();
+
+    ctx.restore();
   });
+
+  // Ambient shadow under planter
+  var shPos = iso(cx, cy+pd*.2, 0.01);
+  ctx.save(); ctx.globalAlpha = .10;
+  ctx.beginPath(); ctx.ellipse(shPos.sx, shPos.sy+5, 32*sc, 9*sc, 0, 0, Math.PI*2);
+  ctx.fillStyle = '#000'; ctx.fill(); ctx.restore();
 }
+
 
 // ═══════════════════════════════════════════════════
 // CHARACTERS
 // ═══════════════════════════════════════════════════
 var CHARS = {
   thomas:{name:'Thomas',full:'Thomas van den Berg',      role:'CEO',        c:'#60a5fa',
-    skin:'#e8c8a8',hair:'#c8b898',eye:'#3a6080',shirt:'#1e3a6a',shirtD:'#152c54',
-    tie:'#8b1a1a',pants:'#0e1626',shoe:'#070810',sex:'m',age:'senior',build:'tall',glasses:false,beard:false,wrinkles:true},
+    skin:'#e8c8a8',hair:'#b8a888',eye:'#3a6080',shirt:'#1e3358',shirtD:'#162446',
+    tie:'#6b1a2a',pants:'#141828',shoe:'#0e0c0e',sex:'m',age:'senior',build:'tall',glasses:false,beard:false,wrinkles:true},
   sara:{  name:'Sara',  full:'Sara de Vries',       role:'CFO',        c:'#34d399',
-    skin:'#f0d8b8',hair:'#8a8070',eye:'#4a6878',shirt:'#1a4a3a',shirtD:'#123a2c',
+    skin:'#f0d8b8',hair:'#8a8070',eye:'#4a6878',shirt:'#1a3d2e',shirtD:'#122a20',
     tie:null,pants:'#18102a',shoe:'#0c0810',sex:'f',age:'senior',build:'medium',glasses:true,beard:false,wrinkles:true,hairGrey:true},
   marc:{  name:'Marc',  full:'Marc Bakker',          role:'Operations', c:'#fb923c',
-    skin:'#c8885a',hair:'#1a1208',eye:'#5a4030',shirt:'#2a1a0a',shirtD:'#1e1206',
-    tie:null,pants:'#281c08',shoe:'#0e0c04',sex:'m',age:'middle',build:'stocky',glasses:false,beard:true,freckles:false},
+    skin:'#c8885a',hair:'#1a1208',eye:'#5a4030',shirt:'#262830',shirtD:'#1a1c22',
+    tie:'#2a1830',pants:'#1e1c20',shoe:'#0e0c04',sex:'m',age:'middle',build:'stocky',glasses:false,beard:true,freckles:false},
   anna:{  name:'Anna',  full:'Anna Visser',    role:'Operations',c:'#a78bfa',
-    skin:'#f0d4b0',hair:'#c87830',eye:'#2860a0',shirt:'#3a1a5a',shirtD:'#2a1248',
+    skin:'#f0d4b0',hair:'#c87830',eye:'#2860a0',shirt:'#2d1854',shirtD:'#1e1038',
     tie:null,pants:'#1c1430',shoe:'#0a0812',sex:'f',age:'young',build:'slim',glasses:true,beard:false},
   kim:{   name:'Kim',   full:'Kim Janssen',         role:'Finance',  c:'#f472b6',
-    skin:'#e8c0a0',hair:'#3a2818',eye:'#5a7060',shirt:'#1e3a2a',shirtD:'#142a1e',
+    skin:'#e8c0a0',hair:'#3a2818',eye:'#5a7060',shirt:'#1a3020',shirtD:'#102015',
     tie:null,pants:'#181828',shoe:'#08080e',sex:'f',age:'young',build:'medium',glasses:false,beard:false},
   ds:{    name:'DS',    full:'DeciSight AI',          role:'Agent',      c:'#22c55e', robot:true}
 };
 
 var SEATS={
-  thomas:{x:3.3,y:1.20},sara:{x:6.2,y:1.20},marc:{x:9.1,y:1.20},
+  thomas:{x:3.5,y:1.20},sara:{x:6.2,y:1.20},marc:{x:9.1,y:1.20},
   anna:{x:3.3,y:8.10},  kim:{x:6.2,y:8.10}, ds:{x:9.1,y:8.10}
 };
 var ENTRY={
@@ -741,19 +997,19 @@ var ENTRY={
 
 // ── CAT SYSTEM - sporadic movement, max 4 moves total ──────────
 var catSpotsBlack = [
-  {x:0.9,y:5.5,sleep:true},   // start: sleeping by whiteboard
-  {x:1.4,y:3.2,sleep:false},  // sitting, watching meeting
-  {x:0.7,y:7.0,sleep:true},   // curled near south wall
-  {x:1.2,y:4.8,sleep:false},  // sitting upright
+  {x:12.8,y:1.8,sleep:true},
+  {x:13.0,y:2.4,sleep:true},
+  {x:12.4,y:1.5,sleep:false},
+  {x:12.9,y:2.0,sleep:true},
 ];
 var catSpotsWhite = [
-  {x:12.8,y:4.2,sleep:false}, // start: sitting by credenza
-  {x:12.2,y:6.5,sleep:true},  // napping further south
-  {x:13.0,y:2.8,sleep:false}, // sitting near north
-  {x:12.5,y:5.0,sleep:true},  // curled up
+  {x:12.2,y:1.4,sleep:false},
+  {x:12.6,y:2.1,sleep:true},
+  {x:12.0,y:1.8,sleep:false},
+  {x:12.4,y:1.2,sleep:true},
 ];
-var catBlack = {x:0.9,y:5.5,tx:0.9,ty:5.5,sleeping:true,spotIdx:0,moves:0};
-var catWhite = {x:12.8,y:4.2,tx:12.8,ty:4.2,sleeping:false,spotIdx:0,moves:0};
+var catBlack = {x:12.8,y:1.8,tx:12.8,ty:1.8,sleeping:true,spotIdx:0,moves:0};
+var catWhite = {x:12.2,y:1.4,tx:12.2,ty:1.4,sleeping:false,spotIdx:0,moves:0};
 var catMoving = false; // only one moves at a time
 
 // Schedule 4 total moves at random times between 20-120s
@@ -1459,131 +1715,86 @@ function hideBubble(){ document.getElementById('bub').classList.remove('show'); 
 
 var TTS_WORKER_URL = 'https://decisight-db.old-wind-8d3a.workers.dev';
 var audioCache={}, curAudio=null, muted=false, _vTO=null;
+var _workerFailed=false;
 
+// ── Low-level audio helpers ──────────────────────────────────────
 function stopV(){
-  if(curAudio){try{curAudio.pause();curAudio.currentTime=0;}catch(e){}curAudio=null;}
+  if(curAudio){try{curAudio.pause();curAudio.currentTime=0;}catch(e){} curAudio=null;}
   if(_vTO){clearTimeout(_vTO);_vTO=null;}
 }
+
 function pauseV(){
   if(curAudio&&!curAudio.paused) curAudio.pause();
-  if(_vTO){clearTimeout(_vTO);_vTO=null;}
 }
+
 function resumeV(){
   if(curAudio&&curAudio.paused) curAudio.play().catch(function(){});
 }
 
+function b64toUrl(b64){
+  var bin=atob(b64), arr=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return URL.createObjectURL(new Blob([arr],{type:'audio/mpeg'}));
+}
+
 function playAudio(url, cb){
   stopV();
-  var a=new Audio(url); curAudio=a;
-  var fired=false;
-  function fin(){if(fired)return;fired=true;curAudio=null;if(cb)cb();}
-  a.onended=fin;
-  a.onerror=function(){fin();};
+  var a=new Audio(url); a.volume=muted?0:1; curAudio=a;
+  var done=false;
+  function fin(){if(done)return;done=true;curAudio=null;if(cb)cb();}
+  a.onended=fin; a.onerror=fin;
   _vTO=setTimeout(fin,90000);
-  a.play().catch(function(){fin();});
-  return true;
+  a.play().catch(fin);
 }
-
-function b64toUrl(b64){
-  var bin=atob(b64), bytes=new Uint8Array(bin.length);
-  for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
-  return URL.createObjectURL(new Blob([bytes],{type:'audio/mpeg'}));
-}
-
-var _workerFailed=false;
 
 function playStatic(cb){
-  // Futuristic computer sound: rising frequency sweep + digital blips
+  if(muted){if(cb)cb();return;}  // skip static when muted
   try{
-    var ac=new(window.AudioContext||window.webkitAudioContext)();
-    var t0=ac.currentTime;
-    var master=ac.createGain();
-    master.gain.setValueAtTime(0,t0);
-    master.gain.linearRampToValueAtTime(0.28,t0+0.02);
-    master.gain.setValueAtTime(0.28,t0+0.52);
-    master.gain.linearRampToValueAtTime(0,t0+0.58);
-    master.connect(ac.destination);
-
-    // 1. Rising frequency sweep (sci-fi power-up)
-    var sweep=ac.createOscillator();
-    sweep.type='sine';
-    sweep.frequency.setValueAtTime(180,t0);
-    sweep.frequency.exponentialRampToValueAtTime(2200,t0+0.4);
-    var sweepGain=ac.createGain();
-    sweepGain.gain.setValueAtTime(0.5,t0);
-    sweepGain.gain.setValueAtTime(0.5,t0+0.35);
-    sweepGain.gain.linearRampToValueAtTime(0,t0+0.42);
-    sweep.connect(sweepGain); sweepGain.connect(master);
-    sweep.start(t0); sweep.stop(t0+0.45);
-
-    // 2. Three quick digital blips at the end
-    [0.38, 0.44, 0.50].forEach(function(delay, i){
-      var blip=ac.createOscillator();
-      blip.type='square';
-      blip.frequency.value=800+i*400;
-      var blipGain=ac.createGain();
-      blipGain.gain.setValueAtTime(0,t0+delay);
-      blipGain.gain.linearRampToValueAtTime(0.35,t0+delay+0.01);
-      blipGain.gain.exponentialRampToValueAtTime(0.001,t0+delay+0.055);
-      // Highpass to make blips crisp
-      var hpf=ac.createBiquadFilter();
-      hpf.type='highpass'; hpf.frequency.value=600;
-      blip.connect(hpf); hpf.connect(blipGain); blipGain.connect(master);
-      blip.start(t0+delay); blip.stop(t0+delay+0.06);
-    });
-
-    // 3. Subtle shimmer underneath (high freq shimmer)
-    var shimmer=ac.createOscillator();
-    shimmer.type='sawtooth';
-    shimmer.frequency.setValueAtTime(3200,t0);
-    shimmer.frequency.linearRampToValueAtTime(4800,t0+0.5);
-    var shimGain=ac.createGain();
-    shimGain.gain.setValueAtTime(0.08,t0);
-    shimGain.gain.linearRampToValueAtTime(0,t0+0.5);
-    var shimHpf=ac.createBiquadFilter();
-    shimHpf.type='highpass'; shimHpf.frequency.value=2000;
-    shimmer.connect(shimHpf); shimHpf.connect(shimGain); shimGain.connect(master);
-    shimmer.start(t0); shimmer.stop(t0+0.55);
-
-    setTimeout(function(){try{ac.close();}catch(e){} if(cb)cb();},620);
+    var ctx2=new(window.AudioContext||window.webkitAudioContext)();
+    var buf=ctx2.createBuffer(1,ctx2.sampleRate*0.12,ctx2.sampleRate);
+    var d=buf.getChannelData(0);
+    for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.08;
+    var src=ctx2.createBufferSource(); src.buffer=buf;
+    src.connect(ctx2.destination); src.start();
+    src.onended=function(){ctx2.close();if(cb)cb();};
   }catch(e){if(cb)cb();}
 }
 
+// ── Core speak function ──────────────────────────────────────────
 async function doSpeak(id, text, cb){
   stopV();
-  if(muted){if(cb)setTimeout(cb,80);return;}
+  // muted: audio will play at volume=0, cb fires naturally when done
   var clean=text.replace(/<[^>]+>/g,'').trim();
   var ck=id+':'+clean.slice(0,40);
-
   async function _speak(){
-    // 1. Try pre-generated AUDIO_MAP
     if(typeof AUDIO_MAP!=='undefined'&&AUDIO_MAP[ck]){
       if(!audioCache[ck]) audioCache[ck]=b64toUrl(AUDIO_MAP[ck]);
       playAudio(audioCache[ck],cb); return;
     }
-    // 2. Try Cloudflare Worker
     if(!_workerFailed){
       try{
-        var resp=await fetch(TTS_WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,text:clean})});
-        if(resp.ok){var blob=await resp.blob();audioCache[ck]=URL.createObjectURL(blob);playAudio(audioCache[ck],cb);return;}
+        var resp=await fetch(TTS_WORKER_URL,{method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({id:id,text:clean})});
+        if(resp.ok){var blob=await resp.blob();
+          audioCache[ck]=URL.createObjectURL(blob);
+          playAudio(audioCache[ck],cb); return;}
       }catch(e){_workerFailed=true;}
     }
-    // 3. Silent timed fallback
     var wc=clean.split(' ').length;
     _vTO=setTimeout(function(){if(cb)cb();},Math.max(2500,wc/145*60000)+500);
   }
-
-  if(id==='ds'){
-    playStatic(function(){ _speak(); });
-  } else {
-    _speak();
-  }
+  if(id==='ds') playStatic(function(){_speak();});
+  else _speak();
 }
 
+// ── Mute: silence only, story continues at reading speed ─────────
 function toggleMute(){
   muted=!muted;
-  if(muted)pauseV();
-  else if(curAudio&&curAudio.paused) curAudio.play().catch(function(){});
+  // Never stop/pause anything — just set volume
+  if(curAudio) curAudio.volume = muted ? 0 : 1;
+  var lbl=document.getElementById('muteLabel');
+  if(lbl){lbl.textContent=muted?'UNMUTE':'MUTE'; lbl.style.color=muted?'#ef4444':'#6a8898';}
   document.getElementById('iVol').style.display=muted?'none':'block';
   document.getElementById('iMute').style.display=muted?'block':'none';
   document.getElementById('btnMute').className=muted?'bsm muted':'bsm';
@@ -1675,7 +1886,7 @@ function speak(id,text,sol,done){
 
 function runStep(){
   if(step>=SCRIPT.length){activeSpeaker=null;hideBubble();document.getElementById('fcta').classList.add('show');setPlay(false);setProg();return;}
-  if(paused){sTO=setTimeout(runStep,300);return;}
+  if(paused){return;}
   var s=SCRIPT[step]; setTopic(s.topic); setProg();
   speak(s.id,s.text,s.sol,function(){step++;if(!paused)runStep();else sTO=setTimeout(runStep,300);});
 }
@@ -1687,7 +1898,7 @@ function togglePlay(){
     pauseV();
   } else {
     resumeV();
-    if(!activeSpeaker && step<SCRIPT.length) runStep();
+    if(!activeSpeaker&&step<SCRIPT.length) runStep();
   }
 }
 
@@ -1706,7 +1917,7 @@ function startDemo(){
 }
 
 function resetSim(){
-  clearTimeout(sTO); stopV(); _pendingCb=null; _pendingCb=null;
+  clearTimeout(sTO); stopV();
   step=0;paused=false;started=false;secs=0;activeSpeaker=null;
   hideBubble();
   document.querySelectorAll('.pill').forEach(function(p){p.classList.remove('on');});
@@ -1722,6 +1933,75 @@ function resetSim(){
   });
 }
 
+
+// ── SUN SHAFTS from windows ──────────────────────────────────────
+function drawSunShafts(t) {
+  var pulse = 0.85 + Math.sin(t*0.3)*0.08;
+  [1.2, 5.2, 9.2].forEach(function(wx, wi) {
+    // Window center in iso
+    var wTop = iso(wx+1.1, 0, 2.1);
+    var wBotL = iso(wx+0.2, 0, 0.55);
+    var wBotR = iso(wx+2.0, 0, 0.55);
+    // Floor hit point — light spreads across floor
+    var floorL = iso(wx-0.5, 4+wi*0.5, 0);
+    var floorR = iso(wx+3.0, 4+wi*0.5, 0);
+
+    ctx.save();
+    var shaft = ctx.createLinearGradient(wTop.sx, wTop.sy, floorL.sx, floorL.sy);
+    shaft.addColorStop(0, 'rgba(160,190,255,' + (0.10*pulse) + ')');
+    shaft.addColorStop(0.4, 'rgba(140,170,240,' + (0.05*pulse) + ')');
+    shaft.addColorStop(1, 'rgba(120,150,220,0)');
+    ctx.fillStyle = shaft;
+    ctx.beginPath();
+    ctx.moveTo(wBotL.sx, wBotL.sy);
+    ctx.lineTo(wBotR.sx, wBotR.sy);
+    ctx.lineTo(floorR.sx, floorR.sy);
+    ctx.lineTo(floorL.sx, floorL.sy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // Floor light pool
+    var fCenter = iso(wx+1.1, 3.5+wi*0.3, 0.01);
+    var poolG = ctx.createRadialGradient(fCenter.sx, fCenter.sy, 5, fCenter.sx, fCenter.sy+20, 80);
+    poolG.addColorStop(0, 'rgba(140,170,255,' + (0.08*pulse) + ')');
+    poolG.addColorStop(1, 'rgba(120,150,230,0)');
+    ctx.fillStyle = poolG;
+    ctx.beginPath();
+    ctx.ellipse(fCenter.sx, fCenter.sy+20, 70, 22, 0, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // Floating dust motes
+  if(!window._dustMotes) {
+    window._dustMotes = [];
+    for(var di=0;di<28;di++) {
+      _dustMotes.push({
+        x: 1.5+Math.random()*11, y: 0.5+Math.random()*8,
+        z: 0.3+Math.random()*2.2, speed: 0.002+Math.random()*0.006,
+        size: 0.8+Math.random()*1.4, phase: Math.random()*Math.PI*2,
+        waftX: (Math.random()-.5)*0.004, waftY: (Math.random()-.5)*0.003
+      });
+    }
+  }
+  _dustMotes.forEach(function(m) {
+    m.x += m.waftX + Math.sin(t*0.4+m.phase)*0.003;
+    m.y += m.waftY + Math.cos(t*0.3+m.phase)*0.002;
+    m.z += m.speed * 0.1;
+    if(m.x<0.5||m.x>13||m.y<0.2||m.y>9||m.z>2.8) {
+      m.x=1.5+Math.random()*11; m.y=0.5+Math.random()*7; m.z=0.2+Math.random()*0.5;
+    }
+    var mp = iso(m.x, m.y, m.z);
+    var inLight = m.y < 5 && m.x > 0.8 && m.x < 12;
+    if(!inLight) return;
+    var alpha = 0.25 + Math.sin(t*0.8+m.phase)*0.12;
+    ctx.fillStyle = 'rgba(180,200,255,' + alpha + ')';
+    ctx.beginPath();
+    ctx.arc(mp.sx, mp.sy, m.size, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
 // ═══════════════════════════════════════════════════
 // RENDER LOOP
 // ═══════════════════════════════════════════════════
@@ -1731,11 +2011,13 @@ function loop(ts){
   ctx.clearRect(0,0,W,H);
   setOrigin();
 
-  var bg=ctx.createRadialGradient(W*.5,H*.5,50,W*.5,H*.5,900);
-  bg.addColorStop(0,'#0d1218'); bg.addColorStop(1,'#07090d');
+  // Dark premium office — deep navy/charcoal
+  var bg=ctx.createRadialGradient(W*.38,H*.3,60,W*.5,H*.55,Math.max(W,H)*.9);
+  bg.addColorStop(0,'#141c2a'); bg.addColorStop(.55,'#0d1420'); bg.addColorStop(1,'#080e18');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
   drawRoom();
+  drawSunShafts(t);
   // furniture drawn in layers below (interleaved with chars)
 
   Object.keys(CHARS).forEach(function(id){
@@ -1743,25 +2025,27 @@ function loop(ts){
     p.x+=(tg.x-p.x)*.05; p.y+=(tg.y-p.y)*.05;
   });
 
-  // Separate furniture into depth layers for correct painter's order
-  // Layer 1: Room accessories (whiteboard, credenza, plants) - always behind all chars
+  // Layer 1: Room (whiteboard, credenza, plants)
   drawFurnitureBack();
-  // Cats with wandering behaviour
+
+  // Layer 2: North chairs — drawn BEFORE north characters so chars appear in front
+  drawFurnitureNorthChairs();
+
+  // Cats
   updateCats(t);
   drawCat(catBlack.x, catBlack.y, 'black', catBlack.sleeping, t);
   drawCat(catWhite.x, catWhite.y, 'white', catWhite.sleeping, t);
-  
-  // Layer 2: Sort characters and table together by depth
+
+  // Layer 3: Sort characters and table together by depth
   var sorted=Object.keys(CHARS).sort(function(a,b){
     return (charPos[a].x+charPos[a].y)-(charPos[b].x+charPos[b].y);
   });
-  
+
   var tableDrawn=false;
-  var TABLE_FRONT_DEPTH = 2.8+2.8; // front corner depth of table
-  
+  var TABLE_FRONT_DEPTH = TX+TY+1.0;
+
   sorted.forEach(function(id){
     var depth=charPos[id].x+charPos[id].y;
-    // Draw table+chairs when we reach something deeper than the table front
     if(!tableDrawn && depth > TABLE_FRONT_DEPTH){
       drawFurnitureTable();
       tableDrawn=true;
@@ -1769,6 +2053,13 @@ function loop(ts){
     drawChar(id,t);
   });
   if(!tableDrawn) drawFurnitureTable();
+
+  // Subtle vignette for cinematic depth
+  var vig=ctx.createRadialGradient(W*.5,H*.45,H*.15,W*.5,H*.5,H*.78);
+  vig.addColorStop(0,'rgba(0,0,0,0)');
+  vig.addColorStop(.7,'rgba(0,0,0,.08)');
+  vig.addColorStop(1,'rgba(0,0,0,.38)');
+  ctx.fillStyle=vig; ctx.fillRect(0,0,W,H);
 
   if(activeSpeaker) positionBubble(activeSpeaker);
 }
