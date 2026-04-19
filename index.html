@@ -360,25 +360,20 @@ window.addEventListener('DOMContentLoaded', function() {
   </div>
 </div>
 <script>
-// Access check — hash stored, not plaintext
 (function(){
-  // Invalidate old plain 'yes' tokens
   if(localStorage.getItem('ds_access')==='yes') localStorage.removeItem('ds_access');
-  var stored = localStorage.getItem('ds_access');
-  if(stored === '41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
+  if(localStorage.getItem('ds_access')==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
     document.getElementById('pw-overlay').style.display='none';
   }
 })();
-
 async function checkPw(){
-  var v = document.getElementById('pw-input').value.trim();
+  var v=document.getElementById('pw-input').value.trim();
   if(!v) return;
-  // Hash input and compare
-  var enc = new TextEncoder().encode(v);
-  var buf = await crypto.subtle.digest('SHA-256', enc);
-  var hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(hash === '41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
-    localStorage.setItem('ds_access', '41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1');
+  var enc=new TextEncoder().encode(v);
+  var buf=await crypto.subtle.digest('SHA-256',enc);
+  var hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
+    localStorage.setItem('ds_access','41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1');
     document.getElementById('pw-overlay').style.display='none';
   } else {
     document.getElementById('pw-error').style.display='block';
