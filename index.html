@@ -361,14 +361,19 @@ window.addEventListener('DOMContentLoaded', function() {
 </div>
 <script>
 (function(){
-  if(localStorage.getItem('ds_access')==='yes'){
+  if(localStorage.getItem('ds_access')==='yes') localStorage.removeItem('ds_access');
+  if(localStorage.getItem('ds_access')==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
     document.getElementById('pw-overlay').style.display='none';
   }
 })();
-function checkPw(){
-  var v=document.getElementById('pw-input').value;
-  if(v==='DecisightSolutions2026'){
-    localStorage.setItem('ds_access','yes');
+async function checkPw(){
+  var v=document.getElementById('pw-input').value.trim();
+  if(!v) return;
+  var enc=new TextEncoder().encode(v);
+  var buf=await crypto.subtle.digest('SHA-256',enc);
+  var hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
+    localStorage.setItem('ds_access','41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1');
     document.getElementById('pw-overlay').style.display='none';
   } else {
     document.getElementById('pw-error').style.display='block';
@@ -398,9 +403,8 @@ function checkPw(){
     <a href="/demo" style="font-size:13px;font-weight:500;color:var(--t4);text-decoration:none;transition:color .2s" onmouseover="this.style.color='var(--t3)'" onmouseout="this.style.color='var(--t4)'">Demo ↗</a>
     <a href="/agents" style="display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#09090b;text-decoration:none;padding:9px 20px;border-radius:8px;background:#22c55e;transition:background .2s" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="#09090b"><polygon points="5 3 19 12 5 21"/></svg>
-      AI Agents
+      Demo
     </a>
-    <a href="#contact" class="nav-cta" style="background:transparent;color:var(--t2);border:1.5px solid var(--bord2)" onmouseover="this.style.borderColor='var(--green)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='var(--bord2)';this.style.color='var(--t2)'">Get Started →</a>
   </div>
 </nav>
 
