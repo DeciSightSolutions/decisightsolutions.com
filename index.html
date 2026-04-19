@@ -361,19 +361,14 @@ window.addEventListener('DOMContentLoaded', function() {
 </div>
 <script>
 (function(){
-  if(localStorage.getItem('ds_access')==='yes') localStorage.removeItem('ds_access');
-  if(localStorage.getItem('ds_access')==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
+  if(localStorage.getItem('ds_access')==='yes'){
     document.getElementById('pw-overlay').style.display='none';
   }
 })();
-async function checkPw(){
-  var v=document.getElementById('pw-input').value.trim();
-  if(!v) return;
-  var enc=new TextEncoder().encode(v);
-  var buf=await crypto.subtle.digest('SHA-256',enc);
-  var hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  if(hash==='41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1'){
-    localStorage.setItem('ds_access','41e633e3eb912d1b7e36ce7623e0762db6b105e785e16e5e03df7710ec4e98c1');
+function checkPw(){
+  var v=document.getElementById('pw-input').value;
+  if(v==='DecisightSolutions2026'){
+    localStorage.setItem('ds_access','yes');
     document.getElementById('pw-overlay').style.display='none';
   } else {
     document.getElementById('pw-error').style.display='block';
